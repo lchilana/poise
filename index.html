@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3f4f6">
+<title>Poise</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Base reset so the file renders the same when opened on its own */
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; }
+/* Layout: one calm column with generous air, hairline dividers, a quiet bottom bar.
+   Palette: cool grays, black type, muted gold for emphasis, light blue as the second hue. */
+:root {
+  --bg: #f3f4f6; --surface: #ffffff; --ink: #141518; --muted: #6b717a; --line: #e4e6ea;
+  --accent: #8f7029; --gold: #c4a456; --accent-soft: #f6f0e2;
+  --blue: #3f6c93; --sky: #86b2d6; --blue-soft: #eaf2f9; --ok: #3d7f5a;
+  --display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141619; --surface: #1c1f23; --ink: #eceef0; --muted: #9ba1a9; --line: #2b2f35;
+  --accent: #d6b56c; --gold: #c9a85a; --accent-soft: #2b2619;
+  --blue: #a7c8e4; --sky: #7fa9cc; --blue-soft: #1d2833; --ok: #7cbf95; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141619; --surface: #1c1f23; --ink: #eceef0; --muted: #9ba1a9; --line: #2b2f35;
+  --accent: #d6b56c; --gold: #c9a85a; --accent-soft: #2b2619;
+  --blue: #a7c8e4; --sky: #7fa9cc; --blue-soft: #1d2833; --ok: #7cbf95; color-scheme: dark }
+
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 620px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-block: 0 calc(110px + env(safe-area-inset-bottom, 0px)); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 22px 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; flex-direction: column; gap: 2px; }
+h1 { font: 600 32px/1 var(--display); margin: 0; letter-spacing: .01em; }
+h1::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-left: 3px; }
+.tagline, .sync { font: 500 10.5px var(--body); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+h2 { font: 500 27px/1.15 var(--display); margin: 0; text-wrap: balance; letter-spacing: .005em; }
+h3 { font: 600 15.5px/1.35 var(--body); margin: 0; letter-spacing: -.005em; }
+.label { font: 600 10.5px var(--body); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+.view { display: flex; flex-direction: column; gap: 22px; padding-top: 24px; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: repeat(5, 1fr); }
+nav.tabs button { position: relative; background: none; border: 0; color: var(--muted); font: 600 11px var(--body); letter-spacing: .02em; padding: 8px 2px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+nav.tabs button svg { width: 21px; height: 21px; stroke-width: 1.6; }
+nav.tabs button svg * { stroke-width: 1.6; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); }
+nav.tabs button[aria-selected="true"]::before { content: ""; position: absolute; top: 0; width: 18px; height: 2px; border-radius: 2px; background: var(--gold); }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn.small { padding: 6px 13px; font-size: 13px; }
+input[type=text], input[type=number], input[type=date], select, textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 11px 14px; }
+input:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea { min-height: 80px; resize: vertical; }
+
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+.list { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.card.tap { cursor: pointer; text-align: left; width: 100%; }
+.card.tap:hover { border-color: color-mix(in srgb, var(--line), var(--ink) 18%); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font: 600 10px var(--body); text-transform: uppercase; letter-spacing: .12em; padding: 3px 9px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); }
+.tag.f { background: var(--accent-soft); color: var(--accent); }
+.cue-line { font: italic 500 19px/1.35 var(--display); color: var(--ink); }
+
+/* pose detail */
+.sheet { position: fixed; inset: 0; z-index: 20; background: var(--bg); overflow-y: auto; padding-top: env(safe-area-inset-top, 0px); }
+.sheet .wrap { padding-block: 18px 56px; display: flex; flex-direction: column; gap: 24px; }
+.sec { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 20px; }
+.sec ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.sec li::marker { color: var(--gold); }
+.say { background: var(--bg); border-radius: 14px; padding: 18px 20px; font: italic 500 24px/1.3 var(--display); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; }
+.kv dt { color: var(--muted); font-size: 12.5px; padding-top: 1px; }
+.kv dd { margin: 0; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+
+/* method */
+.found { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: start; }
+.found svg { width: 56px; height: 56px; }
+.moves { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.move { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.move b { font: 600 21px var(--display); color: var(--ink); display: block; }
+
+/* boards */
+.check { display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: start; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.check:last-child { border-bottom: 0; }
+.check input { width: 20px; height: 20px; accent-color: var(--ink); margin: 2px 0 0; }
+.check.done .t { text-decoration: line-through; color: var(--muted); }
+.x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
+.progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--gold); }
+
+/* light */
+.timeline { position: relative; height: 22px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.timeline .seg { position: absolute; top: 0; bottom: 0; }
+.ticks { display: flex; justify-content: space-between; font: 400 11px var(--mono); color: var(--muted); margin-top: -12px; }
+.win { display: grid; grid-template-columns: 10px 1fr auto; gap: 12px; align-items: center; }
+.win .sw { width: 4px; height: 40px; border-radius: 2px; }
+.time { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* visuals */
+.viz { display: block; width: 100%; height: auto; }
+.thumb { flex: none; width: 108px; aspect-ratio: 240 / 170; max-width: 100%; border-radius: 12px; background: var(--bg); overflow: hidden; display: grid; place-items: center; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.thumb.wide { width: 132px; }
+.pose-row { flex-direction: row; align-items: flex-start; gap: 16px; }
+.pose-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pose-row .cue-line { font-size: 17px; color: var(--muted); }
+.viz-card { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.callouts { margin: 0; padding: 0; list-style: none; counter-reset: c; display: flex; flex-direction: column; gap: 8px; }
+.callouts li { counter-increment: c; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.callouts li::before { content: counter(c); width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--bg); font: 700 11px/18px var(--body); text-align: center; margin-top: 1px; }
+.show-btn { align-self: stretch; padding: 13px; }
+.mv { display: block; width: 100%; height: auto; margin: 6px 0; }
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.photos > p { grid-column: 1 / -1; }
+.ph { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--line); }
+.ph-img { all: unset; display: block; width: 100%; height: 100%; cursor: pointer; }
+.ph-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph.broken .ph-img::after { content: "Photo unavailable"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; color: var(--muted); }
+.ph.broken img { display: none; }
+.ph-x { position: absolute; top: 4px; right: 4px; background: var(--surface); border-radius: 999px; font-size: 15px; padding: 2px 8px; }
+.ph-x.confirm { font-size: 12px; font-weight: 600; color: var(--accent); }
+.err { color: var(--accent); font-size: 13px; grid-column: 1 / -1; }
+.show { position: fixed; inset: 0; z-index: 30; background: var(--surface); display: flex; flex-direction: column; gap: 12px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.show-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.show-top .row { gap: 6px; }
+.show-main { flex: 1; min-height: 0; display: grid; place-items: center; }
+.show-main svg, .show-main img { max-width: 100%; max-height: 100%; width: 100%; object-fit: contain; }
+.show-main.flip > * { transform: scaleX(-1); }
+.show-cue { font: italic 500 clamp(26px, 7vw, 40px)/1.25 var(--display); text-align: center; text-wrap: balance; }
+[data-flip][aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+/* place search */
+.small { font-size: 13px; }
+.ac { position: relative; }
+.sugg { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 8; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.18); overflow: hidden; }
+.sugg button { display: flex; justify-content: space-between; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 12px; cursor: pointer; }
+.sugg button:last-child { border-bottom: 0; }
+.sugg button:hover, .sugg button:focus-visible { background: var(--bg); }
+.sugg button span { color: var(--muted); font-size: 13px; }
+.sugg button span.pn { color: var(--ink); font-size: 15px; }
+details.more summary { cursor: pointer; font-weight: 600; color: var(--blue); }
+a { color: var(--blue); }
+/* camera settings */
+.wrap-chips { flex-wrap: wrap; overflow: visible; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 8px; font-weight: 600; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.tbl-wrap { overflow-x: auto; margin: 0 -2px; }
+table.set { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.set th { font: 600 11px var(--body); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.set td { padding: 12px 10px 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.set td span { display: block; font-size: 12px; color: var(--muted); font-family: var(--body); }
+table.set .num { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.chart { font-size: 13px; }
+table.chart th:first-child, table.chart td:first-child { position: sticky; left: 0; background: var(--surface); min-width: 92px; }
+table.chart td.num { min-width: 78px; }
+table.chart .ap { display: block; color: var(--accent); font-weight: 600; }
+table.chart td.flag { background: var(--accent-soft); }
+.tbl-wrap:has(table.chart) { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 6px 0 6px 16px; }
+.warn { font-size: 13px; color: var(--accent); background: var(--accent-soft); border-radius: 12px; padding: 10px 14px; }
+.empty { text-align: center; padding: 24px 12px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .card.tap { transition: transform .12s; } .card.tap:active { transform: scale(.985); } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top"><div class="brand"><h1>Poise</h1><span class="tagline">Posing &amp; light companion</span></div><span class="sync" id="sync">Saved on this device</span></header>
+  <main id="app"></main>
+</div>
+<nav class="tabs" role="tablist" id="tabs"></nav>
+<div class="sheet" id="sheet" hidden></div>
+<div class="show" id="show" hidden></div>
+
+<script id="places-data" type="application/json">{"tz":["America/Anchorage","America/Boise","America/Chicago","America/Denver","America/Detroit","America/Indiana/Indianapolis","America/Juneau","America/Kentucky/Louisville","America/Los_Angeles","America/New_York","America/North_Dakota/New_Salem","America/Phoenix","Pacific/Honolulu"],"c":[["New York City","NY",40.714,-74.006,9,8804190],["Los Angeles","CA",34.052,-118.244,8,3820914],["Brooklyn","NY",40.65,-73.95,9,2736074],["Chicago","IL",41.85,-87.65,2,2664452],["Queens","NY",40.681,-73.837,9,2316841],["Houston","TX",29.763,-95.363,2,2314157],["Phoenix","AZ",33.448,-112.074,11,1650070],["Philadelphia","PA",39.952,-75.164,9,1573916],["San Antonio","TX",29.424,-98.494,2,1526656],["Manhattan","NY",40.783,-73.966,9,1487536],["San Diego","CA",32.716,-117.165,8,1404452],["The Bronx","NY",40.85,-73.866,9,1385108],["Dallas","TX",32.783,-96.807,2,1326087],["Jacksonville","FL",30.332,-81.656,9,1009833],["Fort Worth","TX",32.725,-97.321,2,1008106],["San Jose","CA",37.339,-121.895,8,997368],["Austin","TX",30.267,-97.743,2,974447],["Columbus","OH",39.961,-82.999,9,913175],["Charlotte","NC",35.227,-80.843,9,911311],["Indianapolis","IN",39.768,-86.158,5,887642],["San Francisco","CA",37.775,-122.419,8,827526],["Seattle","WA",47.606,-122.332,8,780995],["Denver","CO",39.739,-104.985,3,729019],["Washington","DC",38.895,-77.036,9,689545],["Nashville","TN",36.166,-86.784,2,689447],["Oklahoma City","OK",35.468,-97.516,2,681054],["El Paso","TX",31.759,-106.487,3,678815],["Boston","MA",42.358,-71.06,9,653833],["Portland","OR",45.523,-122.676,8,652503],["Detroit","MI",42.331,-83.046,4,645705],["Las Vegas","NV",36.175,-115.137,8,641903],["New South Memphis","TN",35.087,-90.057,2,641608],["Memphis","TN",35.15,-90.049,2,633104],["Louisville","KY",38.254,-85.759,7,624444],["Baltimore","MD",39.29,-76.612,9,585708],["South Boston","MA",42.333,-71.049,9,571281],["Albuquerque","NM",35.084,-106.651,3,564559],["Milwaukee","WI",43.039,-87.906,2,563531],["Tucson","AZ",32.222,-110.926,11,542629],["Fresno","CA",36.748,-119.772,8,542107],["Sacramento","CA",38.582,-121.494,8,524943],["Atlanta","GA",33.749,-84.388,9,510823],["Miami","FL",25.774,-80.194,9,487014],["Omaha","NE",41.256,-95.94,2,486051],["Raleigh","NC",35.772,-78.639,9,482295],["Kansas City","MO",39.1,-94.579,2,475378],["Long Beach","CA",33.767,-118.189,8,474140],["Mesa","AZ",33.422,-111.823,11,471825],["Staten Island","NY",40.562,-74.14,9,468730],["Colorado Springs","CO",38.834,-104.821,3,456568],["Virginia Beach","VA",36.853,-75.978,9,454808],["Oakland","CA",37.804,-122.271,8,419267],["Tampa","FL",27.948,-82.458,9,414547],["Tulsa","OK",36.154,-95.993,2,413066],["Minneapolis","MN",44.98,-93.264,2,410939],["Wichita","KS",37.692,-97.338,2,396119],["Arlington","TX",32.736,-97.108,2,388125],["Bakersfield","CA",35.373,-119.019,8,373640],["Cleveland","OH",41.499,-81.695,9,365379],["New Orleans","LA",29.955,-90.075,2,362701],["Aurora","CO",39.729,-104.832,3,359407],["Honolulu","HI",21.307,-157.858,12,350964],["Anaheim","CA",33.835,-117.915,8,350742],["West Raleigh","NC",35.787,-78.664,9,338759],["Orlando","FL",28.538,-81.379,9,334854],["Lexington","KY",37.989,-84.478,9,320347],["Riverside","CA",33.953,-117.396,8,317261],["Corpus Christi","TX",27.801,-97.396,2,316239],["Lexington-Fayette","KY",38.05,-84.459,9,314488],["Cincinnati","OH",39.127,-84.514,9,311097],["Santa Ana","CA",33.746,-117.868,8,310227],["Stockton","CA",37.958,-121.291,8,305658],["Pittsburgh","PA",40.441,-79.996,9,304391],["Saint Paul","MN",44.944,-93.093,2,303176],["Lincoln","NE",40.8,-96.667,2,294757],["Anchorage","AK",61.218,-149.9,0,289600],["Meads","KY",38.413,-82.709,9,288649],["Henderson","NV",36.04,-114.982,8,285667],["Greensboro","NC",36.073,-79.792,9,285342],["Plano","TX",33.02,-96.699,2,283558],["Newark","NJ",40.736,-74.172,9,281944],["Madison","WI",43.073,-89.401,2,280305],["St. Louis","MO",38.627,-90.198,2,279695],["Chula Vista","CA",32.64,-117.084,8,265757],["Toledo","OH",41.664,-83.555,9,265638],["Jersey City","NJ",40.728,-74.078,9,264290],["Reno","NV",39.53,-119.814,8,264165],["Chandler","AZ",33.306,-111.841,11,260828],["Fort Wayne","IN",41.131,-85.129,5,260326],["Buffalo","NY",42.886,-78.878,9,258071],["Durham","NC",35.994,-78.899,9,257636],["St. Petersburg","FL",27.771,-82.679,9,257083],["Irvine","CA",33.669,-117.823,8,256927],["Laredo","TX",27.506,-99.508,2,256153],["Lubbock","TX",33.578,-101.855,2,249042],["Gilbert","AZ",33.353,-111.789,11,247542],["Tri-Cities","WA",46.245,-119.196,8,244036],["Winston-Salem","NC",36.1,-80.244,9,241218],["Glendale","AZ",33.539,-112.186,11,240126],["Norfolk","VA",36.847,-76.285,9,238005],["Hialeah","FL",25.858,-80.278,9,237069],["Garland","TX",32.913,-96.639,2,236897],["Scottsdale","AZ",33.509,-111.899,11,236839],["Irving","TX",32.814,-96.949,2,236607],["Boise","ID",43.614,-116.203,1,235684],["Chesapeake","VA",36.819,-76.275,9,235429],["North Las Vegas","NV",36.199,-115.118,8,234807],["Fremont","CA",37.548,-121.989,8,232206],["Spokane","WA",47.66,-117.429,8,229447],["Baton Rouge","LA",30.443,-91.187,2,227470],["Upper West Side","NY",40.787,-73.975,9,226989],["Richmond","VA",37.554,-77.46,9,226610],["Paradise","NV",36.097,-115.147,8,223167],["Tacoma","WA",47.253,-122.444,8,222906],["Jamaica","NY",40.691,-73.806,9,216866],["San Bernardino","CA",34.108,-117.29,8,216108],["Salt Lake City","UT",40.761,-111.891,3,215548],["Huntsville","AL",34.73,-86.586,2,215006],["Des Moines","IA",41.601,-93.609,2,214133],["Fontana","CA",34.092,-117.435,8,212704],["Modesto","CA",37.639,-120.997,8,211266],["Rochester","NY",43.155,-77.616,9,209802],["Maryvale","AZ",33.502,-112.178,11,208189],["Arlington","VA",38.881,-77.104,9,207627],["Oxnard","CA",34.197,-119.177,8,207254],["Columbus","GA",32.461,-84.988,9,206922],["Worcester","MA",42.263,-71.802,9,206518],["Moreno Valley","CA",33.938,-117.231,8,204198],["Little Rock","AR",34.746,-92.29,2,202591],["Fayetteville","NC",35.053,-78.878,9,201963],["Huntington Beach","CA",33.66,-117.999,8,201899],["Tallahassee","FL",30.438,-84.281,9,201731],["Yonkers","NY",40.93,-73.898,9,201116],["Glendale","CA",34.143,-118.255,8,201020],["Cypress","TX",29.969,-95.697,2,200839],["Aurora","IL",41.761,-88.32,2,200661],["Amarillo","TX",35.222,-101.831,2,198645],["Akron","OH",41.081,-81.519,9,197542],["Vancouver","WA",45.639,-122.661,8,196442],["Birmingham","AL",33.521,-86.802,2,196357],["Montgomery","AL",32.367,-86.3,2,195287],["Grand Rapids","MI",42.963,-85.668,4,195097],["Peoria","AZ",33.581,-112.237,11,190985],["Providence","RI",41.824,-71.413,9,190934],["Knoxville","TN",35.961,-83.921,9,190740],["Sunrise Manor","NV",36.211,-115.073,8,189372],["Grand Prairie","TX",32.746,-96.998,2,187809],["Shreveport","LA",32.525,-93.75,2,187593],["Brownsville","TX",25.902,-97.497,2,186738],["Overland Park","KS",38.982,-94.671,2,186515],["Newport News","VA",36.98,-76.43,9,186247],["Mobile","AL",30.694,-88.043,2,183289],["Fort Lauderdale","FL",26.122,-80.143,9,183146],["Santa Clarita","CA",34.392,-118.543,8,182371],["Chattanooga","TN",35.046,-85.31,9,181099],["East Flatbush","NY",40.654,-73.93,9,178464],["Spring Valley","NV",36.108,-115.245,8,178395],["Santa Rosa","CA",38.44,-122.714,8,178127],["Eugene","OR",44.052,-123.087,8,176654],["Tempe","AZ",33.415,-111.909,11,175826],["Oceanside","CA",33.196,-117.379,8,175691],["Salem","OR",44.943,-123.035,8,175535],["Garden Grove","CA",33.774,-117.941,8,175393],["Rancho Cucamonga","CA",34.106,-117.593,8,175236],["Cape Coral","FL",26.563,-81.95,9,175229],["East New York","NY",40.667,-73.882,9,173198],["Sioux Falls","SD",43.544,-96.728,2,171544],["Ontario","CA",34.063,-117.651,8,171214],["Fort Collins","CO",40.585,-105.084,3,170924],["Springfield","MO",37.215,-93.298,2,170188],["Hollywood","CA",34.098,-118.327,8,167664],["Elk Grove","CA",38.409,-121.372,8,166913],["Clarksville","TN",36.53,-87.359,2,166722],["Pembroke Pines","FL",26.003,-80.224,9,166611],["Deer Valley","AZ",33.684,-112.135,11,165656],["Murfreesboro","TN",35.846,-86.39,2,165430],["Port Saint Lucie","FL",27.294,-80.35,9,164603],["Corona","CA",33.875,-117.566,8,164226],["McKinney","TX",33.198,-96.615,2,162898],["Lancaster","CA",34.698,-118.137,8,161103],["Cary","NC",35.792,-78.781,9,159769],["Alexandria","VA",38.805,-77.047,9,159467],["Tempe Junction","AZ",33.414,-111.943,11,158368],["Palmdale","CA",34.579,-118.116,8,158351],["Hayward","CA",37.669,-122.081,8,158289],["Salinas","CA",36.678,-121.656,8,157380],["Sunnyvale","CA",37.369,-122.036,8,155805],["Frisco","TX",33.151,-96.824,2,154407],["Springfield","MA",42.101,-72.59,9,154341],["East Chattanooga","TN",35.065,-85.249,9,154024],["Pasadena","TX",29.691,-95.209,2,153784],["Jackson","MS",32.299,-90.185,2,153701],["Pomona","CA",34.055,-117.752,8,153266],["Kansas City","KS",39.114,-94.627,2,152933],["Washington Heights","NY",40.85,-73.935,9,152613],["Lakewood","CO",39.705,-105.081,3,152597],["Escondido","CA",33.119,-117.086,8,151038],["Astoria","NY",40.772,-73.93,9,150165],["Hollywood","FL",26.011,-80.149,9,149728],["Borough Park","NY",40.634,-73.997,9,149248],["Valencia","CA",34.444,-118.61,8,148456],["Rockford","IL",42.271,-89.094,2,148278],["East Hampton","VA",37.037,-76.332,9,147993],["Joliet","IL",41.525,-88.083,2,147861],["Savannah","GA",32.084,-81.1,9,147780],["Paterson","NJ",40.917,-74.172,9,147754],["Bridgeport","CT",41.179,-73.189,9,147629],["Naperville","IL",41.786,-88.147,2,147100],["Gainesville","FL",29.652,-82.325,9,145214],["Mesquite","TX",32.767,-96.599,2,144788],["Syracuse","NY",43.048,-76.147,9,144142],["Torrance","CA",33.836,-118.341,8,143592],["Surprise","AZ",33.631,-112.333,11,143148],["Metairie Terrace","LA",29.979,-90.164,2,142489],["Columbia","SC",34.001,-81.035,9,142416],["Pasadena","CA",34.148,-118.145,8,142250],["Orange","CA",33.788,-117.853,8,140992],["Fullerton","CA",33.87,-117.925,8,140847],["Killeen","TX",31.117,-97.728,2,140806],["McAllen","TX",26.203,-98.23,2,140269],["Bellevue","WA",47.61,-122.201,8,139820],["Metairie","LA",29.984,-90.153,2,138481],["Hampton","VA",37.03,-76.345,9,137148],["Miramar","FL",25.987,-80.232,9,137132],["Van Nuys","CA",34.187,-118.449,8,136443],["West Valley City","UT",40.692,-112.001,3,136208],["Dayton","OH",39.759,-84.192,9,135512],["Olathe","KS",38.881,-94.819,2,134305],["Warren","MI",42.49,-83.013,4,134056],["Thornton","CO",39.868,-104.972,3,133451],["Carrollton","TX",32.954,-96.89,2,133168],["Charleston","SC",32.776,-79.933,9,132609],["Midland","TX",31.997,-102.078,2,132524],["Waco","TX",31.549,-97.147,2,132356],["Sterling Heights","MI",42.58,-83.03,4,132052],["Denton","TX",33.215,-97.133,2,131044],["Cedar Rapids","IA",42.008,-91.644,2,130405],["New Haven","CT",41.308,-72.928,9,130322],["Roseville","CA",38.752,-121.288,8,130269],["Visalia","CA",36.33,-119.292,8,130104],["Coral Springs","FL",26.271,-80.271,9,129485],["Thousand Oaks","CA",34.171,-118.838,8,129339],["Columbia","MO",38.952,-92.334,2,129330],["Elizabeth","NJ",40.664,-74.211,9,129007],["Stamford","CT",41.053,-73.539,9,128874],["Concord","CA",37.978,-122.031,8,128667],["Norman","OK",35.223,-97.439,2,128026],["Alhambra","AZ",33.498,-112.134,11,127764],["Athens","GA",33.961,-83.378,9,127315],["Kent","WA",47.381,-122.235,8,126952],["Simi Valley","CA",34.269,-118.781,8,126788],["East Los Angeles","CA",34.024,-118.172,8,126496],["Santa Clara","CA",37.354,-121.955,8,126215],["Sunset Park","NY",40.645,-74.012,9,126000],["Topeka","KS",39.048,-95.678,2,125963],["Abilene","TX",32.449,-99.733,2,125182],["Koreatown","CA",34.058,-118.301,8,124281],["Sheepshead Bay","NY",40.591,-73.945,9,122534],["Amherst","NY",42.978,-78.8,9,122366],["Victorville","CA",34.536,-117.291,8,122225],["Vallejo","CA",38.104,-122.257,8,121692],["Lafayette","LA",30.224,-92.02,2,121374],["Chico","CA",39.728,-121.837,8,121345],["North Stamford","CT",41.138,-73.543,9,121230],["Hartford","CT",41.764,-72.685,9,121054],["Berkeley","CA",37.872,-122.273,8,120972],["West Palm Beach","FL",26.715,-80.053,9,120932],["Allentown","PA",40.608,-75.49,9,120207],["Evansville","IN",37.975,-87.556,2,119943],["Palm Bay","FL",28.034,-80.589,9,119760],["Fargo","ND",46.877,-96.79,2,118523],["Clearwater","FL",27.966,-82.8,9,117292],["Independence","MO",39.091,-94.416,2,117255],["Billings","MT",45.783,-108.501,3,117116],["Ann Arbor","MI",42.278,-83.741,4,117070],["El Monte","CA",34.069,-118.028,8,116732],["Harlem","NY",40.808,-73.945,9,116345],["Westminster","CO",39.837,-105.037,3,116317],["Round Rock","TX",30.508,-97.679,2,115997],["Wilmington","NC",34.236,-77.946,9,115933],["East Harlem","NY",40.795,-73.942,9,115921],["Arvada","CO",39.803,-105.087,3,115368],["Beaumont","TX",30.086,-94.102,2,115282],["Provo","UT",40.234,-111.659,3,115162],["Peoria","IL",40.694,-89.589,2,115070],["Carlsbad","CA",33.158,-117.351,8,114746],["Odessa","TX",31.846,-102.368,2,114428],["Springfield","IL",39.802,-89.644,2,114394],["Downey","CA",33.94,-118.133,8,114219],["Elmhurst","NY",40.736,-73.878,9,113364],["Costa Mesa","CA",33.641,-117.919,8,113204],["Miami Gardens","FL",25.942,-80.246,9,113187],["North Peoria","IL",40.718,-89.584,2,113004],["Fairfield","CA",38.249,-122.04,8,112970],["Lansing","MI",42.733,-84.556,4,112644],["Bushwick","NY",40.694,-73.919,9,112620],["Gravesend","NY",40.598,-73.965,9,112229],["Rochester","MN",44.022,-92.47,2,112225],["Elgin","IL",42.037,-88.281,2,112111],["West Jordan","UT",40.61,-111.939,3,111946],["Inglewood","CA",33.962,-118.353,8,111666],["Tuscaloosa","AL",33.21,-87.569,2,111338],["Richardson","TX",32.948,-96.73,2,110815],["Lowell","MA",42.633,-71.316,9,110699],["East Independence","MO",39.096,-94.355,2,110675],["Gresham","OR",45.498,-122.431,8,110553],["Antioch","CA",38.005,-121.806,8,110542],["Cambridge","MA",42.375,-71.106,9,110402],["High Point","NC",35.956,-80.005,9,110268],["Manchester","NH",42.996,-71.455,9,110229],["Temecula","CA",33.494,-117.148,8,110003],["Murrieta","CA",33.554,-117.214,8,109830],["Centennial","CO",39.579,-104.877,3,109741],["Richmond","CA",37.936,-122.348,8,109708],["Corona","NY",40.747,-73.86,9,109698],["Pueblo","CO",38.254,-104.609,3,109412],["Pearland","TX",29.564,-95.286,2,108821],["Waterbury","CT",41.558,-73.052,9,108802],["Greeley","CO",40.423,-104.709,3,108795],["West Covina","CA",34.069,-117.939,8,108484],["Enterprise","NV",36.025,-115.242,8,108481],["North Charleston","SC",32.855,-79.975,9,108304],["Everett","WA",47.979,-122.202,8,108010],["College Station","TX",30.628,-96.334,2,107889],["Pompano Beach","FL",26.238,-80.125,9,107762],["South Fulton","GA",33.593,-84.673,9,107436],["Norwalk","CA",33.902,-118.082,8,107140],["Boulder","CO",40.015,-105.271,3,106803],["Broken Arrow","OK",36.053,-95.791,2,106563],["Daly City","CA",37.706,-122.462,8,106562],["Sandy Springs","GA",33.924,-84.379,9,105330],["Burbank","CA",34.181,-118.309,8,105319],["Green Bay","WI",44.519,-88.02,2,105207],["Santa Maria","CA",34.953,-120.436,8,105093],["Universal City","CA",34.139,-118.353,8,105000],["Wichita Falls","TX",33.914,-98.493,2,104710],["Lakeland","FL",28.039,-81.95,9,104401],["Clovis","CA",36.825,-119.703,8,104180],["Lewisville","TX",33.046,-96.994,2,104039],["Tyler","TX",32.351,-95.301,2,103700],["El Cajon","CA",32.795,-116.963,8,103679],["San Mateo","CA",37.563,-122.326,8,103536],["Brandon","FL",27.938,-82.286,9,103483],["Rialto","CA",34.106,-117.37,8,103132],["Davenport","IA",41.524,-90.578,2,102582],["Edison","NJ",40.519,-74.412,9,102548],["Hillsboro","OR",45.523,-122.99,8,102347],["Las Cruces","NM",32.312,-106.778,3,101643],["South Bend","IN",41.683,-86.25,5,101516],["Albany","NY",42.653,-73.756,9,101228],["New Bedford","MA",41.635,-70.927,9,101079],["Vista","CA",33.2,-117.243,8,100890],["Davie","FL",26.063,-80.233,9,100882],["Chinatown","CA",37.797,-122.409,8,100574],["Renton","WA",47.483,-122.217,8,100242],["Roanoke","VA",37.271,-79.941,9,100011],["San Angelo","TX",31.464,-100.437,2,99893],["Kenosha","WI",42.585,-87.821,2,99858],["Clinton Township","MI",42.587,-82.92,4,99753],["Columbia","MD",39.24,-76.839,9,99615],["Erie","PA",42.129,-80.085,9,99475],["Portsmouth Heights","VA",36.821,-76.369,9,99049],["Richmond Hill","NY",40.7,-73.831,9,98984],["Alief","TX",29.711,-95.596,2,98725],["Spring Hill","FL",28.477,-82.525,9,98621],["Compton","CA",33.896,-118.22,8,98462],["League City","TX",29.507,-95.095,2,98312],["Flint","MI",43.013,-83.687,4,98310],["Allen","TX",33.103,-96.671,2,98143],["Dorchester","MA",42.297,-71.075,9,97826],["Mission Viejo","CA",33.6,-117.672,8,97156],["Vacaville","CA",38.357,-121.988,8,96803],["Ventura","CA",34.278,-119.293,8,96769],["Highlands Ranch","CO",39.554,-104.969,3,96713],["Lawton","OK",34.609,-98.39,2,96655],["Beaverton","OR",45.487,-122.804,8,96577],["South Gate","CA",33.955,-118.212,8,96401],["Portsmouth","VA",36.835,-76.298,9,96201],["Sparks","NV",39.535,-119.753,8,96094],["Yuma","AZ",32.725,-114.624,11,95548],["Brockton","MA",42.083,-71.018,9,95314],["Dearborn","MI",42.322,-83.176,4,95171],["Federal Way","WA",47.322,-122.313,8,95171],["Lee's Summit","MO",38.911,-94.382,2,95094],["Asheville","NC",35.601,-82.554,9,95056],["Spokane Valley","WA",47.673,-117.239,8,94919],["Fordham","NY",40.859,-73.898,9,94678],["Livonia","MI",42.368,-83.353,4,94635],["Roswell","GA",34.023,-84.362,9,94501],["Orem","UT",40.297,-111.695,3,94457],["Fall River","MA",41.701,-71.155,9,94000],["Lawrence","KS",38.972,-95.235,2,93917],["The Woodlands","TX",30.158,-95.489,2,93847],["West Albany","NY",42.683,-73.778,9,93794],["Yakima","WA",46.602,-120.506,8,93701],["Quincy","MA",42.253,-71.002,9,93618],["Flatbush","NY",40.652,-73.959,9,93361],["Hesperia","CA",34.426,-117.301,8,93295],["Carson","CA",33.831,-118.282,8,93281],["Boca Raton","FL",26.359,-80.083,9,93235],["Santa Monica","CA",34.019,-118.491,8,93220],["San Marcos","CA",33.143,-117.166,8,92931],["Boyle Heights","CA",34.034,-118.205,8,92785],["Plantation","FL",26.134,-80.232,9,92560],["Lynn","MA",42.467,-70.949,9,92457],["Miami Beach","FL",25.791,-80.13,9,92312],["Arden-Arcade","CA",38.602,-121.379,8,92186],["Westminster","CA",33.759,-118.007,8,92114],["Longmont","CO",40.167,-105.102,3,92088],["Santa Barbara","CA",34.421,-119.698,8,91842],["Redding","CA",40.587,-122.392,8,91582],["Macon","GA",32.841,-83.632,9,91351],["Meridian","ID",43.612,-116.392,1,90739],["San Leandro","CA",37.725,-122.156,8,90712],["Greenville","NC",35.613,-77.366,9,90597],["Edmond","OK",35.653,-97.478,2,90092],["Chinatown","NY",40.716,-73.996,9,90000],["Nampa","ID",43.541,-116.563,1,89839],["Trenton","NJ",40.217,-74.743,9,89620],["Sandy Hills","UT",40.581,-111.851,3,89575],["Newton","MA",42.337,-71.209,9,88817],["Toms River","NJ",39.954,-74.198,9,88791],["Carmel","IN",39.978,-86.118,5,88713],["Norwalk","CT",41.118,-73.408,9,88485],["Waukegan","IL",42.364,-87.845,2,88475],["Deltona","FL",28.901,-81.264,9,88474],["Hawthorne","CA",33.916,-118.353,8,88451],["Fort Smith","AR",35.386,-94.399,2,88194],["Suffolk","VA",36.728,-76.585,9,88161],["Sugar Land","TX",29.62,-95.635,2,88156],["Livermore","CA",37.682,-121.768,8,88126],["Nashua","NH",42.765,-71.468,9,87970],["Reading","PA",40.336,-75.927,9,87879],["Concord","NC",35.409,-80.582,9,87696],["Indio","CA",33.721,-116.217,8,87533],["Rio Rancho","NM",35.233,-106.664,3,87521],["Enchanted Hills","NM",35.337,-106.593,3,87521],["Santa Fe","NM",35.687,-105.938,3,87505],["Sandy","UT",40.592,-111.884,3,87461],["Whittier","CA",33.979,-118.033,8,87438],["Canarsie","NY",40.644,-73.901,9,87366],["Kirkland","WA",47.681,-122.209,8,87281],["Menifee","CA",33.728,-117.146,8,87174],["Newport Beach","CA",33.619,-117.929,8,87127],["Tracy","CA",37.74,-121.426,8,87075],["Citrus Heights","CA",38.707,-121.281,8,87056],["Bend","OR",44.058,-121.315,8,87014],["Canton","MI",42.309,-83.482,4,86825],["Lehigh Acres","FL",26.625,-81.625,9,86784],["Greenburgh","NY",41.033,-73.843,9,86764],["Bloomington","MN",44.841,-93.298,2,86435],["West Town","IL",41.894,-87.675,2,86429],["Germantown","MD",39.173,-77.272,9,86395],["Clifton","NJ",40.858,-74.164,9,86334],["Duluth","MN",46.783,-92.107,2,86110],["Champaign","IL",40.116,-88.243,2,86096],["Near North Side","IL",41.9,-87.635,2,85711],["Chino","CA",34.012,-117.689,8,85595],["Alhambra","CA",34.095,-118.127,8,85551],["Ogden","UT",41.223,-111.974,3,85444],["Redwood City","CA",37.485,-122.236,8,85288],["Bellingham","WA",48.76,-122.488,8,85146],["O'Fallon","MO",38.811,-90.7,2,85040],["Hoover","AL",33.405,-86.811,2,84848],["Melbourne","FL",28.084,-80.608,9,84678],["Danbury","CT",41.395,-73.454,9,84657],["East Norwalk","CT",41.106,-73.398,9,84530],["Edinburg","TX",26.302,-98.163,2,84497],["Sunrise","FL",26.134,-80.113,9,84439],["Bloomington","IN",39.165,-86.526,5,84067],["Cicero","IL",41.846,-87.754,2,83886],["Hemet","CA",33.748,-116.973,8,83861],["San Pedro","CA",33.736,-118.292,8,83556],["Ahwatukee Foothills","AZ",33.342,-111.984,11,83464],["Johns Creek","GA",34.029,-84.199,9,83335],["Mission","TX",26.216,-98.325,2,83298],["Troy","MI",42.606,-83.15,4,83280],["Buena Park","CA",33.868,-117.998,8,83270],["Mid-City","CA",34.041,-118.361,8,83000],["Palm Coast","FL",29.585,-81.208,9,82893],["Fayetteville","AR",36.063,-94.157,2,82830],["Sioux City","IA",42.5,-96.4,2,82821],["Lake Forest","CA",33.647,-117.689,8,82492],["Merced","CA",37.302,-120.483,8,82436],["Longview","TX",32.501,-94.74,2,82287],["Bryan","TX",30.674,-96.37,2,82118],["Westland","MI",42.324,-83.4,4,82000],["Warwick","RI",41.7,-71.416,9,81699],["Lakewood","CA",33.854,-118.134,8,81611],["Farmington Hills","MI",42.485,-83.377,4,81330],["San Tan Valley","AZ",33.191,-111.528,11,81321],["Mount Pleasant","SC",32.794,-79.863,9,81317],["Cranston","RI",41.78,-71.437,9,81073],["Largo","FL",27.91,-82.788,9,81000],["Homestead","FL",25.469,-80.478,9,80737],["South Suffolk","VA",36.717,-76.59,9,80690],["Avondale","AZ",33.436,-112.35,11,80684],["Tustin","CA",33.746,-117.826,8,80583],["Mountain View","CA",37.386,-122.084,8,80435],["Napa","CA",38.297,-122.286,8,80434],["Somerville","MA",42.388,-71.1,9,80318],["Kendall","FL",25.679,-80.317,9,80241],["Lawrence","MA",42.707,-71.163,9,80231],["Parma","OH",41.405,-81.723,9,79937],["New Rochelle","NY",40.911,-73.782,9,79846],["Lynchburg","VA",37.414,-79.142,9,79812],["Medford","OR",42.327,-122.876,8,79805],["Deerfield Beach","FL",26.318,-80.1,9,79768],["Sylmar","CA",34.308,-118.449,8,79614],["Pleasanton","CA",37.662,-121.875,8,79510],["Belmont Cragin","IL",41.932,-87.769,2,79159],["Brooklyn Park","MN",45.094,-93.356,2,79149],["Goodyear","AZ",33.435,-112.358,11,79003],["Kennewick","WA",46.211,-119.137,8,78896],["Alameda","CA",37.771,-122.261,8,78630],["Town 'n' Country","FL",28.011,-82.577,9,78442],["Bellflower","CA",33.882,-118.117,8,78441],["Chino Hills","CA",33.994,-117.759,8,78309],["Bloomington","IL",40.484,-88.994,2,78292],["Alafaya","FL",28.564,-81.211,9,78113],["Springdale","AR",36.187,-94.129,2,77859],["Racine","WI",42.726,-87.783,2,77742],["Hammond","IN",41.583,-87.5,2,77614],["Milpitas","CA",37.428,-121.907,8,77604],["Gary","IN",41.593,-87.346,2,77156],["Scranton","PA",41.409,-75.665,9,77118],["Baldwin Park","CA",34.085,-117.961,8,77071],["Auburn","WA",47.307,-122.228,8,77006],["Fishers","IN",39.956,-86.014,5,76794],["Saint Joseph","MO",39.769,-94.847,2,76780],["Pharr","TX",26.195,-98.184,2,76538],["Upland","CA",34.098,-117.648,8,76443],["Folsom","CA",38.678,-121.176,8,76375],["Baytown","TX",29.735,-94.977,2,76335],["San Ramon","CA",37.78,-121.978,8,76134],["Camden","NJ",39.926,-75.12,9,76119],["Lake Charles","LA",30.213,-93.204,2,76070],["Kalamazoo","MI",42.292,-85.587,4,76041],["Brick","NJ",40.059,-74.137,9,76021],["Arlington Heights","IL",42.088,-87.981,2,75926],["Plymouth","MN",45.011,-93.456,2,75907],["South Ozone Park","NY",40.67,-73.819,9,75878],["Doral","FL",25.82,-80.355,9,75874],["Waterford","MI",42.693,-83.412,4,75737],["Evanston","IL",42.041,-87.69,2,75527],["Manteca","CA",37.797,-121.216,8,75448],["Wyoming","MI",42.913,-85.705,4,75275],["Loveland","CO",40.398,-105.075,3,75182],["Cheektowaga","NY",42.903,-78.755,9,75178],["Kings Bridge","NY",40.879,-73.905,9,75132],["Bismarck","ND",46.808,-100.784,2,75092],["Perris","CA",33.783,-117.229,8,74971],["Bethlehem","PA",40.626,-75.37,9,74892],["Albany","GA",31.579,-84.156,9,74843],["Schaumburg","IL",42.033,-88.083,2,74693],["Gastonia","NC",35.262,-81.187,9,74543],["Brownsville","NY",40.661,-73.92,9,74497],["Union City","CA",37.596,-122.019,8,74494],["Bolingbrook","IL",41.699,-88.068,2,74306],["Iowa City","IA",41.661,-91.53,2,74220],["Layton","UT",41.06,-111.971,3,74143],["Missouri City","TX",29.619,-95.538,2,74139],["Appleton","WI",44.262,-88.415,2,74139],["Shelby","MI",42.671,-83.033,4,74099],["Fort Myers","FL",26.622,-81.841,9,74013],["Boynton Beach","FL",26.525,-80.066,9,73966],["Jonesboro","AR",35.842,-90.704,2,73907],["South Lawndale","IL",41.844,-87.713,2,73826],["Logan Square","IL",41.923,-87.699,2,73702],["Rapid City","SD",44.081,-103.231,3,73569],["Warner Robins","GA",32.616,-83.627,9,73490],["Rochester Hills","MI",42.658,-83.15,4,73424],["Decatur","IL",39.84,-88.955,2,73254],["Southfield","MI",42.473,-83.222,4,73156],["Saint George","UT",37.104,-113.584,3,72897],["New Britain","CT",41.661,-72.78,9,72808],["Daytona Beach","FL",29.211,-81.023,9,72647],["Franklin","TN",35.925,-86.869,2,72639],["Turlock","CA",37.495,-120.847,8,72292],["Temple","TX",31.098,-97.343,2,72277],["West Ridge","IL",42.0,-87.693,2,72211],["Apple Valley","CA",34.501,-117.186,8,72174],["Lynwood","CA",33.93,-118.211,8,71989],["Waukesha","WI",43.012,-88.231,2,71970],["Canton","OH",40.799,-81.378,9,71885],["Gulfport","MS",30.367,-89.093,2,71856],["Pawtucket","RI",41.879,-71.383,9,71591],["Lauderhill","FL",26.14,-80.213,9,71579],["Rock Hill","SC",34.925,-81.025,9,71548],["Silver Spring","MD",38.991,-77.026,9,71452],["West Gulfport","MS",30.404,-89.094,2,71329],["Flower Mound","TX",33.015,-97.097,2,71253],["Centreville","VA",38.84,-77.429,9,71135],["Lafayette","IN",40.417,-86.875,5,71111],["Passaic","NJ",40.857,-74.128,9,71085],["Riverview","FL",27.866,-82.326,9,71050],["Redlands","CA",34.056,-117.183,8,71035],["Missoula","MT",46.872,-113.994,3,71022],["Rancho Cordova","CA",38.589,-121.303,8,71017],["Wilmington","DE",39.746,-75.547,9,70898],["New Braunfels","TX",29.703,-98.124,2,70543],["Cherry Hill","NJ",39.935,-75.031,9,70475],["Flagstaff","AZ",35.198,-111.651,11,70320],["Muncie","IN",40.193,-85.386,5,70087],["Mira Mesa","CA",32.916,-117.144,8,70000],["Woodland Hills","CA",34.168,-118.606,8,70000],["Weston","FL",26.1,-80.4,9,69959],["Frederick","MD",39.414,-77.411,9,69479],["Pasco","WA",46.24,-119.101,8,69451],["Pittsburg","CA",38.028,-121.885,8,69424],["Ridgewood","NY",40.7,-73.906,9,69317],["Palatine","IL",42.11,-88.034,2,69308],["North Richland Hills","TX",32.834,-97.229,2,69204],["Union City","NJ",40.78,-74.024,9,69156],["Kissimmee","FL",28.305,-81.417,9,69152],["Walnut Creek","CA",37.906,-122.065,8,68910],["Cordova","TN",35.156,-89.776,2,68779],["Mount Vernon","NY",40.913,-73.837,9,68628],["Conroe","TX",30.312,-95.456,2,68602],["Dothan","AL",31.223,-85.39,2,68567],["Northridge","CA",34.228,-118.537,8,68469],["Waterloo","IA",42.493,-92.343,2,68460],["Maple Grove","MN",45.072,-93.456,2,68385],["Framingham","MA",42.279,-71.416,9,68318],["Redondo Beach","CA",33.849,-118.388,8,68166],["Bossier City","LA",32.516,-93.732,2,68094],["Yorba Linda","CA",33.889,-117.813,8,67973],["Woodbury","MN",44.924,-92.959,2,67855],["Eau Claire","WI",44.811,-91.498,2,67778],["Waldorf","MD",38.625,-76.939,9,67752],["Forest Hills","NY",40.716,-73.85,9,67714],["Davis","CA",38.545,-121.741,8,67666],["Glen Burnie","MD",39.163,-76.625,9,67639],["Camarillo","CA",34.216,-119.038,8,67608],["Victoria","TX",28.805,-97.004,2,67574],["Gaithersburg","MD",39.143,-77.201,9,67456],["Jacksonville","NC",34.754,-77.43,9,67357],["South San Francisco","CA",37.655,-122.408,8,67271],["Kenner","LA",29.994,-90.242,2,67091],["Jackson Heights","NY",40.756,-73.885,9,67067],["Rockville","MD",39.084,-77.153,9,66980],["Jackson","TN",35.615,-88.814,2,66975],["Lincoln Park","IL",41.922,-87.648,2,66959],["Yuba City","CA",39.14,-121.617,8,66941],["Portland","ME",43.657,-70.259,9,66881],["Palo Alto","CA",37.442,-122.143,8,66853],["Casas Adobes","AZ",32.323,-110.995,11,66795],["Marysville","WA",48.052,-122.177,8,66773],["South Jordan","UT",40.562,-111.93,3,66648],["Oshkosh","WI",44.025,-88.543,2,66555],["North Little Rock","AR",34.77,-92.267,2,66504],["Bayside","NY",40.768,-73.777,9,66455],["Bayonne","NJ",40.669,-74.114,9,66311],["Eagan","MN",44.804,-93.167,2,66286],["Delray Beach","FL",26.461,-80.073,9,66255],["Johnson City","TN",36.313,-82.353,9,66027],["Dale City","VA",38.637,-77.311,9,65969],["Cedar Park","TX",30.505,-97.82,2,65945],["Parkchester","NY",40.839,-73.86,9,65876],["Atascocita","TX",29.999,-95.177,2,65844],["Saint Cloud","MN",45.561,-94.162,2,65842],["Ellicott City","MD",39.267,-76.798,9,65834],["Laguna Niguel","CA",33.523,-117.708,8,65806],["Saint Charles","MO",38.784,-90.481,2,65794],["Harlingen","TX",26.191,-97.696,2,65774],["San Clemente","CA",33.427,-117.612,8,65526],["West Lynchburg","VA",37.403,-79.178,9,65517],["Middletown","NJ",40.394,-74.117,9,65490],["Framingham Center","MA",42.297,-71.437,9,65413],["Schenectady","NY",42.814,-73.94,9,65305],["Cheyenne","WY",41.14,-104.82,3,65132],["Broomfield","CO",39.921,-105.087,3,65065],["Ames","IA",42.035,-93.62,2,65060],["Park Slope","NY",40.67,-73.986,9,65047],["Shawnee","KS",39.042,-94.72,2,65046],["Reseda","CA",34.201,-118.536,8,65000],["Conway","AR",35.089,-92.442,2,64980],["East Orange","NJ",40.767,-74.205,9,64949],["Portage Park","IL",41.958,-87.765,2,64841],["Skokie","IL",42.033,-87.733,2,64821],["West Bloomfield Township","MI",42.569,-83.384,4,64690],["Tamarac","FL",26.213,-80.25,9,64681],["Youngstown","OH",41.1,-80.65,9,64628],["Lodi","CA",38.13,-121.272,8,64596],["North Hollywood","CA",34.172,-118.379,8,64587],["Greenville","SC",34.853,-82.394,9,64579],["Celina","TX",33.325,-96.784,2,64427],["Mansfield","TX",32.563,-97.142,2,64274],["Santa Cruz","CA",36.974,-122.031,8,64220],["Pico Rivera","CA",33.983,-118.097,8,64218],["Madera","CA",36.961,-120.061,8,64208],["Janesville","WI",42.683,-89.019,2,64123],["West Des Moines","IA",41.577,-93.711,2,64113],["Montebello","CA",34.009,-118.105,8,63921],["Georgetown","TX",30.633,-97.677,2,63716],["Alpharetta","GA",34.075,-84.294,9,63693],["Lorain","OH",41.453,-82.182,9,63647],["Bowling Green","KY",36.99,-86.444,2,63616],["Flatlands","NY",40.621,-73.935,9,63601],["Dundalk","MD",39.251,-76.521,9,63597],["Eden Prairie","MN",44.855,-93.471,2,63496],["North Bergen","NJ",40.804,-74.012,9,63484],["Florence-Graham","CA",33.968,-118.244,8,63387],["Waltham","MA",42.376,-71.236,9,63378],["West Hartford","CT",41.762,-72.742,9,63268],["Rogers","AR",36.332,-94.119,2,63159],["Carol City","FL",25.941,-80.246,9,63031],["Encinitas","CA",33.037,-117.292,8,62930],["East Village","NY",40.729,-73.987,9,62832],["Haverhill","MA",42.776,-71.077,9,62765],["Jupiter","FL",26.934,-80.094,9,62707],["Council Bluffs","IA",41.262,-95.861,2,62597],["Wellington","FL",26.659,-80.241,9,62560],["West Coon Rapids","MN",45.16,-93.35,2,62528],["North Miami","FL",25.89,-80.187,9,62435],["Hamilton","OH",39.4,-84.561,9,62407],["North Port","FL",27.044,-82.236,9,62345],["Tulare","CA",36.208,-119.347,8,62315],["Coon Rapids","MN",45.12,-93.288,2,62240],["Millcreek","UT",40.687,-111.875,3,62139],["La Habra","CA",33.932,-117.946,8,62131],["Blaine","MN",45.161,-93.235,2,62124],["Auburn","AL",32.61,-85.481,2,62059],["Lake Elsinore","CA",33.668,-117.327,8,61981],["Carmichael","CA",38.617,-121.328,8,61762],["Taylor","MI",42.241,-83.27,4,61568],["Burnsville","MN",44.768,-93.278,2,61481],["Monterey Park","CA",34.063,-118.123,8,61468],["Castro Valley","CA",37.694,-122.086,8,61388],["Irvington","NJ",40.732,-74.235,9,61323],["Rocklin","CA",38.791,-121.236,8,61213],["Utica","NY",43.101,-75.233,9,61100],["Malden","MA",42.425,-71.066,9,61068],["National City","CA",32.678,-117.099,8,61060],["Financial District","NY",40.708,-74.009,9,60976],["Springfield","OR",44.046,-123.022,8,60870],["Bethesda","MD",38.981,-77.1,9,60858],["Terre Haute","IN",39.467,-87.414,5,60825],["Vineland","NJ",39.486,-75.026,9,60818],["West Hollywood","FL",26.021,-80.184,9,60806],["San Marcos","TX",29.883,-97.941,2,60684],["Brentwood","NY",40.781,-73.246,9,60664],["Lakeville","MN",44.65,-93.243,2,60633],["West Allis","WI",43.017,-88.007,2,60620],["Redmond","WA",47.674,-122.122,8,60598],["Canoga Park","CA",34.201,-118.598,8,60578],["Cupertino","CA",37.323,-122.032,8,60572],["Taylorsville","UT",40.668,-111.939,3,60514],["Bristol","CT",41.672,-72.949,9,60452],["Moore","OK",35.34,-97.487,2,60451],["Gardena","CA",33.888,-118.309,8,60447],["Petaluma","CA",38.232,-122.637,8,60438],["Bensalem","PA",40.105,-74.951,9,60427],["Grand Junction","CO",39.064,-108.551,3,60358],["Casper","WY",42.867,-106.313,3,60285],["Rowlett","TX",32.903,-96.564,2,60236],["La Mesa","CA",32.768,-117.023,8,60089],["Pine Hills","FL",28.558,-81.453,9,60076],["Bensonhurst","NY",40.602,-73.994,9,60000],["Coney Island","NY",40.578,-73.994,9,60000],["Rancho Penasquitos","CA",32.959,-117.115,8,60000],["Valley Glen","CA",34.186,-118.42,8,60000],["Meriden","CT",41.538,-72.807,9,59988],["Pontiac","MI",42.639,-83.291,4,59917],["Port Orange","FL",29.138,-80.996,9,59866],["Hamden","CT",41.396,-72.897,9,59847],["Lakewood","WA",47.172,-122.518,8,59829],["Fountainebleau","FL",25.773,-80.348,9,59764],["Saint Clair Shores","MI",42.497,-82.889,4,59715],["Springfield","OH",39.924,-83.809,9,59680],["Great Falls","MT",47.5,-111.301,3,59638],["Chapel Hill","NC",35.913,-79.056,9,59568],["Canyon Country","CA",34.423,-118.472,8,59530],["Huntington Park","CA",33.982,-118.225,8,59430],["Lancaster","PA",40.038,-76.306,9,59339],["Coconut Creek","FL",26.252,-80.179,9,59302],["Leander","TX",30.579,-97.853,2,59202],["Idaho Falls","ID",43.467,-112.034,1,59184],["San Rafael","CA",37.974,-122.531,8,59162],["Noblesville","IN",40.046,-86.009,5,59093],["Marietta","GA",33.953,-84.55,9,59067],["Fairfield","CT",41.141,-73.264,9,59052],["Owensboro","KY",37.774,-87.113,2,59042],["Eastvale","CA",33.964,-117.564,8,59039],["Royal Oak","MI",42.489,-83.145,4,59008],["Brentwood","CA",37.932,-121.696,8,58968],["Dubuque","IA",42.501,-90.665,2,58799],["Brookline","MA",42.332,-71.121,9,58732],["Novi","MI",42.481,-83.475,4,58723],["Des Plaines","IL",42.033,-87.883,2,58677],["Carson City","NV",39.164,-119.767,8,58639],["Orland Park","IL",41.63,-87.854,2,58619],["Bartlett","TN",35.205,-89.874,2,58579],["Woodland","CA",38.679,-121.773,8,58567],["Lehi","UT",40.392,-111.851,3,58486],["White Plains","NY",41.034,-73.763,9,58459],["Arcadia","CA",34.14,-118.035,8,58408],["Reston","VA",38.969,-77.341,9,58404],["Ocala","FL",29.187,-82.14,9,58218],["Clay","NY",43.186,-76.172,9,58206],["Central City","AZ",33.44,-112.058,11,58161],["South Vineland","NJ",39.446,-75.029,9,58122],["Sanford","FL",28.801,-81.273,9,58111],["Bowie","MD",38.943,-76.73,9,58025],["Kokomo","IN",40.486,-86.134,5,57995],["Wayne","NJ",40.925,-74.277,9,57915],["Santee","CA",32.838,-116.974,8,57787],["Dublin","CA",37.702,-121.936,8,57721],["Palm Harbor","FL",28.078,-82.764,9,57439],["Medford","MA",42.418,-71.106,9,57403],["Midwest City","OK",35.45,-97.397,2,57249],["Center City","PA",39.951,-75.159,9,57239],["Margate","FL",26.245,-80.206,9,57234],["South Whittier","CA",33.95,-118.039,8,57156],["Tinley Park","IL",41.573,-87.784,2,57143],["Pflugerville","TX",30.439,-97.62,2,57122],["New Brunswick","NJ",40.486,-74.452,9,57035],["Grand Forks","ND",47.925,-97.033,2,57011],["Fountain Valley","CA",33.709,-117.954,8,56987],["North Hills","CA",34.236,-118.485,8,56946],["Diamond Bar","CA",34.029,-117.81,8,56897],["Taunton","MA",41.9,-71.09,9,56789],["Oak Lawn","IL",41.711,-87.758,2,56781],["Union","NJ",40.698,-74.263,9,56771],["Ankeny","IA",41.73,-93.606,2,56764],["Chicopee","MA",42.149,-72.608,9,56741],["Irving Park","IL",41.953,-87.736,2,56520],["Berwyn","IL",41.851,-87.794,2,56368],["Manhattan","KS",39.184,-96.572,2,56308],["Kendale Lakes","FL",25.708,-80.407,9,56148],["Smyrna","GA",33.884,-84.514,9,56146],["Dearborn Heights","MI",42.337,-83.273,4,56145],["Porterville","CA",36.065,-119.017,8,56058],["Piscataway","NJ",40.499,-74.399,9,56044],["Hendersonville","TN",36.305,-86.62,2,56018],["Morningside Heights","NY",40.81,-73.963,9,55929],["Rocky Mount","NC",35.938,-77.791,9,55806],["Corvallis","OR",44.565,-123.262,8,55780],["Olympia","WA",47.045,-122.902,8,55733],["Valdosta","GA",30.833,-83.28,9,55724],["Hanford","CA",36.327,-119.646,8,55659],["Castle Rock","CO",39.372,-104.856,3,55591],["Greenwood","IN",39.614,-86.107,5,55586],["Chicago Lawn","IL",41.775,-87.696,2,55551],["Hempstead","NY",40.706,-73.619,9,55547],["Novato","CA",38.107,-122.57,8,55530],["Kettering","OH",39.69,-84.169,9,55525],["Bellevue","NE",41.137,-95.891,2,55510],["Shoreline","WA",47.756,-122.342,8,55439],["Decatur","AL",34.606,-86.983,2,55437],["Paramount","CA",33.889,-118.16,8,55412],["Port Arthur","TX",29.885,-93.942,2,55340],["Abington","PA",40.121,-75.118,9,55310],["Anderson","IN",40.105,-85.68,5,55305],["Tamiami","FL",25.759,-80.398,9,55271],["Towson","MD",39.401,-76.602,9,55197],["North Chicopee","MA",42.183,-72.6,9,55179],["Uptown","IL",41.966,-87.653,2,55137],["Sarasota","FL",27.336,-82.531,9,55118],["Cypress Hills","NY",40.677,-73.891,9,54944],["West Haven","CT",41.271,-72.947,9,54927],["Rosemead","CA",34.081,-118.073,8,54908],["Edgewater","IL",41.983,-87.664,2,54873],["Jackson","NJ",39.776,-74.862,9,54856],["Highland","CA",34.128,-117.209,8,54854],["Mount Prospect","IL",42.066,-87.937,2,54747],["Colton","CA",34.074,-117.314,8,54621],["Encanto","AZ",33.479,-112.078,11,54614],["Pocatello","ID",42.871,-112.446,1,54441],["Bradenton","FL",27.499,-82.575,9,54437],["Rogers Park","IL",42.009,-87.667,2,54402],["Weymouth","MA",42.221,-70.94,9,54395],["Port Charlotte","FL",26.976,-82.091,9,54392],["Normal","IL",40.514,-88.991,2,54373],["Spring","TX",30.08,-95.417,2,54298],["Allapattah","FL",25.815,-80.224,9,54289],["Richland","WA",46.286,-119.284,8,54248],["Euless","TX",32.837,-97.082,2,54219],["Blue Springs","MO",39.017,-94.282,2,54148],["East Pensacola Heights","FL",30.429,-87.18,2,54104],["Hacienda Heights","CA",33.993,-117.969,8,54038],["Ozone Park","NY",40.677,-73.844,9,53985],["Briarwood","NY",40.709,-73.815,9,53877],["Cathedral City","CA",33.78,-116.465,8,53826],["Lakewood","NJ",40.098,-74.218,9,53805],["Elyria","OH",41.368,-82.108,9,53775],["Pensacola","FL",30.421,-87.217,2,53724],["Wheaton","IL",41.866,-88.107,2,53715],["Commerce City","CO",39.808,-104.934,3,53696],["Hoboken","NJ",40.744,-74.032,9,53635],["Watsonville","CA",36.91,-121.757,8,53628],["Lake Havasu City","AZ",34.484,-114.322,11,53553],["Little Havana","FL",25.768,-80.233,9,53430],["Revere","MA",42.408,-71.012,9,53422],["West New York","NJ",40.788,-74.014,9,53366],["Yucaipa","CA",34.034,-117.043,8,53328],["Gilroy","CA",37.006,-121.568,8,53231],["Poinciana","FL",28.14,-81.458,9,53193],["University of Texas","TX",30.286,-97.739,2,53082],["Kingsport","TN",36.548,-82.562,9,53014],["Levittown","PA",40.155,-74.829,9,52983],["Palm Beach Gardens","FL",26.823,-80.139,9,52923],["Milford","CT",41.222,-73.056,9,52759],["Delano","CA",35.769,-119.247,8,52733],["West Sacramento","CA",38.58,-121.53,8,52721],["Huntersville","NC",35.411,-80.843,9,52704],["Perth Amboy","NJ",40.507,-74.265,9,52682],["Sherman Oaks","CA",34.151,-118.449,8,52677],["Southaven","MS",34.989,-90.013,2,52589],["Saint Peters","MO",38.8,-90.627,2,52575],["Downtown DC","DC",38.894,-77.02,9,52560],["Harrisonburg","VA",38.45,-78.869,9,52538],["Peabody","MA",42.528,-70.929,9,52504],["Placentia","CA",33.872,-117.87,8,52495],["Lenexa","KS",38.954,-94.734,2,52490],["DeSoto","TX",32.59,-96.857,2,52486],["Burlington","NC",36.096,-79.438,9,52472],["South Hill","WA",47.141,-122.27,8,52431],["Elkhart","IN",41.682,-85.977,5,52348],["La Crosse","WI",43.801,-91.24,2,52306],["Oak Park","IL",41.885,-87.784,2,52287],["Florissant","MO",38.789,-90.323,2,52268],["Sammamish","WA",47.642,-122.08,8,52253],["Wakefield","NY",40.898,-73.852,9,52201],["Albany","OR",44.637,-123.106,8,52175],["Hoffman Estates","IL",42.043,-88.08,2,52138],["Albany Park","IL",41.968,-87.723,2,52079],["Methuen","MA",42.726,-71.191,9,52044],["Glendora","CA",34.136,-117.865,8,52009],["Wilmington","CA",33.78,-118.263,8,52000],["Queens Village","NY",40.727,-73.742,9,51919],["Brookhaven","GA",33.858,-84.34,9,51910],["Levittown","NY",40.726,-73.514,9,51881],["Palm Desert","CA",33.723,-116.377,8,51869],["Joplin","MO",37.084,-94.513,2,51818],["Enid","OK",36.396,-97.878,2,51776],["Bonita Springs","FL",26.34,-81.779,9,51704],["Irondequoit","NY",43.213,-77.58,9,51692],["Caldwell","ID",43.663,-116.687,1,51686],["Minnetonka","MN",44.913,-93.503,2,51669],["Pinellas Park","FL",27.843,-82.7,9,51617],["Battle Creek","MI",42.317,-85.178,4,51589],["Casa Grande","AZ",32.88,-111.757,11,51460],["South Shore","IL",41.762,-87.578,2,51451],["Mott Haven","NY",40.809,-73.923,9,51450],["The Villages","FL",28.934,-81.96,9,51442],["Grand Island","NE",40.925,-98.342,2,51440],["Grapevine","TX",32.934,-97.078,2,51404],["Stratford","CT",41.185,-73.133,9,51384],["Kentwood","MI",42.869,-85.645,4,51357],["City of Milford (balance)","CT",41.224,-73.062,9,51271],["Tigard","OR",45.431,-122.771,8,51253],["East Hartford","CT",41.782,-72.612,9,51252],["Apple Valley","MN",44.732,-93.218,2,51221],["Plainfield","NJ",40.634,-74.407,9,51217],["Leesburg","VA",39.116,-77.564,9,51209],["Parsippany","NJ",40.858,-74.426,9,51144],["Coral Gables","FL",25.721,-80.268,9,51117],["The Trails of Frisco","TX",33.161,-96.872,2,51059],["The Hammocks","FL",25.671,-80.445,9,51003],["Buckeye","AZ",33.37,-112.584,11,50876],["Flagami","FL",25.762,-80.316,9,50834],["Catalina Foothills","AZ",32.298,-110.919,11,50796],["Lakewood","OH",41.482,-81.798,9,50656],["North La Crosse","WI",43.846,-91.248,2,50470],["Burien","WA",47.47,-122.347,8,50467],["Havertown","PA",39.981,-75.309,9,50430],["Logan","UT",41.735,-111.834,3,50371],["South Peabody","MA",42.51,-70.949,9,50293],["Aliso Viejo","CA",33.565,-117.727,8,50195],["Harrisburg","PA",40.274,-76.884,9,50183],["Galveston","TX",29.301,-94.798,2,50180],["Poway","CA",32.963,-117.036,8,50157],["Edina","MN",44.89,-93.35,2,50138],["Minnetonka Mills","MN",44.941,-93.442,2,50117],["Stonecrest","GA",33.708,-84.135,9,50000],["East Honolulu","HI",21.289,-157.717,12,49914],["Minot","ND",48.233,-101.296,2,49450],["Coeur d'Alene","ID",47.678,-116.78,8,49122],["Summerville","SC",33.019,-80.176,9,48848],["Huntington","WV",38.419,-82.445,9,48638],["Roswell","NM",33.394,-104.525,3,48544],["Pearl City","HI",21.397,-157.975,12,47698],["Waiau-Pacific Palisades","HI",21.4,-157.954,12,47591],["Twin Falls","ID",42.563,-114.461,1,47468],["East Providence","RI",41.814,-71.37,9,47408],["Charleston","WV",38.35,-81.633,9,46838],["Hattiesburg","MS",31.327,-89.29,2,46805],["Makakilo / Kapolei / Honokai Hale","HI",21.337,-158.097,12,46389],["Biloxi","MS",30.396,-88.885,2,45637],["Concord","NH",43.208,-71.538,9,43976],["Kalihi-Palama","HI",21.326,-157.876,12,43805],["Bozeman","MT",45.68,-111.039,3,43405],["Hilo","HI",19.73,-155.091,12,43263],["Farmington","NM",36.728,-108.219,3,42871],["East Concord","NH",43.242,-71.538,9,42605],["Burlington","VT",44.476,-73.212,9,42452],["Joint Base Pearl Harbor Hickam","HI",21.349,-157.947,12,42184],["Woonsocket","RI",42.003,-71.515,9,41475],["Covington","KY",39.084,-84.509,9,40997],["South Valley","NM",35.01,-106.678,3,40976],["Sumter","SC",33.92,-80.341,9,40816],["Meridian","MS",32.364,-88.704,2,39661],["Dover","DE",39.158,-75.524,9,39403],["Columbia Heights","DC",38.926,-77.029,9,38000],["Lewiston","ME",44.1,-70.215,9,36202],["Olive Branch","MS",34.962,-89.83,2,36010],["Mount Pleasant","DC",38.931,-77.041,9,35842],["Coventry","RI",41.7,-71.683,9,35525],["Cumberland","RI",41.967,-71.433,9,34843],["Derry Village","NH",42.892,-71.312,9,34539],["Butte","MT",46.004,-112.535,3,34190],["Newark","DE",39.684,-75.75,9,33817],["West Fargo","ND",46.875,-96.9,2,33597],["Richmond","KY",37.748,-84.295,9,33533],["Kearney","NE",40.699,-99.081,2,33021],["Gillette","WY",44.291,-105.502,3,32649],["Bangor","ME",44.799,-68.773,9,32391],["Fairbanks","AK",64.838,-147.716,0,32325],["Laramie","WY",41.311,-105.591,3,32158],["Helena","MT",46.593,-112.036,3,32091],["Juneau","AK",58.302,-134.42,6,31555],["Parkersburg","WV",39.267,-81.562,9,30991],["Dover","NH",43.198,-70.874,9,30880],["Morgantown","WV",39.63,-79.956,9,30708],["Rochester","NH",43.305,-70.976,9,30038],["Salem","NH",42.788,-71.201,9,29549],["Aberdeen","SD",45.465,-98.486,2,28102],["West Scarborough","ME",43.57,-70.388,9,27706],["Wheeling","WV",40.064,-80.721,9,27648],["Williston","ND",48.147,-103.618,2,26977],["Fremont","NE",41.433,-96.498,2,26474],["Central 14th Street / Spring Road","DC",38.937,-77.033,9,25899],["South Portland","ME",43.641,-70.241,9,25556],["Hastings","NE",40.586,-98.388,2,24924],["Eagle River","AK",61.321,-149.568,0,24793],["Norfolk","NE",42.028,-97.417,2,24366],["Rock Springs","WY",41.587,-109.203,3,23962],["South Portland Gardens","ME",43.639,-70.315,9,23893],["Dickinson","ND",46.879,-102.79,3,23765],["Brookings","SD",44.311,-96.798,2,23657],["Northwest One","DC",38.904,-77.012,9,23386],["Dupont Circle","DC",38.908,-77.044,9,23226],["Auburn","ME",44.098,-70.231,9,22871],["Foggy Bottom","DC",38.899,-77.053,9,22146],["Watertown","SD",44.899,-97.115,2,22073],["Kalispell","MT",48.196,-114.313,3,22052],["Mandan","ND",46.827,-100.89,10,21382],["Biddeford","ME",43.493,-70.453,9,21282],["Middletown","DE",39.45,-75.716,9,20372],["Badger","AK",64.8,-147.533,0,19482],["Weirton Heights","WV",40.408,-80.539,9,19450],["Bear","DE",39.629,-75.658,9,19371],["Weirton","WV",40.419,-80.59,9,19175],["South Burlington","VT",44.467,-73.171,9,18791],["Fairmont","WV",39.485,-80.143,9,18733],["Sheridan","WY",44.797,-106.956,3,17873],["Colchester","VT",44.544,-73.148,9,16986],["Rutland","VT",43.611,-72.973,9,15824],["Mitchell","SD",43.709,-98.03,2,15669],["Knik-Fairview","AK",61.513,-149.6,0,14923],["Yankton","SD",42.871,-97.397,2,14557],["Brookside","DE",39.667,-75.727,9,14353],["Glasgow","DE",39.605,-75.745,9,14303],["Pierre","SD",44.368,-100.351,2,14091],["Hockessin","DE",39.788,-75.697,9,13527],["College","AK",64.857,-147.803,0,12964],["Green River","WY",41.529,-109.466,3,12465],["Evanston","WY",41.268,-110.963,3,12133],["Essex Junction","VT",44.491,-73.111,9,10111],["Havre","MT",48.55,-109.684,3,9834],["Hartford","VT",43.661,-72.338,9,9779],["Wasilla","AK",61.581,-149.441,0,9284],["Bennington","VT",42.878,-73.197,9,9074],["Barre","VT",44.197,-72.502,9,8746]]}</script>
+<script>
+/* ---------- Content: foundations, moves, poses (written for personal use) ---------- */
+const FOUNDATIONS = [
+  { id: "closed", name: "Face to Face", line: "Turned toward each other, chest to chest.", why: "The closest, most intimate position. Romantic frames start here.",
+    svg: '<circle cx="18" cy="16" r="6"/><circle cx="38" cy="16" r="6"/><rect x="12" y="24" width="12" height="24" rx="5"/><rect x="32" y="24" width="12" height="24" rx="5"/>' },
+  { id: "open", name: "Side by Side", line: "Next to each other, both bodies angled about 45° toward camera.", why: "Shows both faces and both outfits. A safe, flattering place to begin.",
+    svg: '<circle cx="20" cy="16" r="6"/><circle cx="36" cy="16" r="6"/><rect x="14" y="24" width="12" height="24" rx="5" transform="rotate(-8 20 36)"/><rect x="30" y="24" width="12" height="24" rx="5" transform="rotate(8 36 36)"/>' },
+  { id: "hinge", name: "Shoulder Lean", line: "Shoulders touching, bodies angled into a V that opens toward camera.", why: "The shoulder contact keeps them connected while you adjust everything else.",
+    svg: '<circle cx="22" cy="16" r="6"/><circle cx="34" cy="16" r="6"/><rect x="15" y="24" width="12" height="24" rx="5" transform="rotate(14 21 24)"/><rect x="29" y="24" width="12" height="24" rx="5" transform="rotate(-14 35 24)"/>' },
+  { id: "stacked", name: "Layered", line: "One just behind the other, both facing camera.", why: "Adds depth and lets you move focus from one face to the other.",
+    svg: '<circle cx="32" cy="12" r="6" opacity=".55"/><rect x="26" y="20" width="12" height="26" rx="5" opacity=".55"/><circle cx="24" cy="20" r="6"/><rect x="18" y="28" width="12" height="22" rx="5"/>' },
+  { id: "moving", name: "In Motion", line: "Walking, turning or swaying. The pose happens along a path.", why: "Loosens people up. Reach for it when they stiffen.",
+    svg: '<circle cx="18" cy="14" r="6"/><circle cx="36" cy="14" r="6"/><path d="M12 24h12l4 24h-6zM30 24h12l-2 24h-6z"/><path d="M6 52h44" stroke-width="2" stroke-dasharray="3 3" fill="none"/>' },
+];
+const MOVES = [
+  { w: "Turn Out", d: "From Face to Face or Shoulder Lean: both pivot toward camera." },
+  { w: "Turn In", d: "From Side by Side: turn toward each other, chest to chest." },
+  { w: "Step Behind", d: "One steps behind the other; both face camera." },
+  { w: "Swap", d: "Switch who is in front, or which side each stands on." },
+  { w: "Stroll", d: "Hold hands and walk to a mark. Shoot the whole way." },
+  { w: "Glance", d: "Change only where they look: each other, down, away, camera." },
+];
+const SUBJECTS = ["Couple", "Bride", "Groom", "Bridesmaids", "Groomsmen", "Wedding party", "Family"];
+const POSES = [
+  { id: "p1", name: "Shoulder lean", subject: "Couple", f: "hinge",
+    setup: ["Stand them shoulder to shoulder, hips a little apart so bodies form a V.", "Outside hands relaxed or in pockets; inside hands meet low.", "Weight on the back leg for both."],
+    cue: "Lean in until your shoulders touch. Now tip your heads toward each other until your hair just meets.", to: "Both", tone: "Calm, slow",
+    capture: { height: "Chest", frames: "6–10", frame: "Start wide for the V, then tight on faces" },
+    fails: ["Hips touching too, which flattens the V", "Both looking at camera with stiff smiles", "Shoulders hunched up toward ears"] },
+  { id: "p2", name: "Forehead rest", subject: "Couple", f: "closed",
+    setup: ["Face to face, his hands on her waist, hers on his chest.", "Foreheads touch, eyes closed.", "Keep a small gap between chests so light gets between them."],
+    cue: "Foreheads together, close your eyes, and tell each other one thing you're excited about tonight. Whisper it.", to: "Both", tone: "Quiet, almost whispering",
+    capture: { height: "Eye level", frames: "8–12 through the whisper", frame: "Tight. Wait for the laugh at the end" },
+    fails: ["Noses colliding; tilt heads opposite ways", "Hands pressed flat like a hug", "Shooting before the whisper starts"] },
+  { id: "p3", name: "Open walk", subject: "Couple", f: "moving",
+    setup: ["Pick a 15–20 step path toward you or across frame.", "Hold inside hands, outside arms loose.", "Start them one step outside the frame edge."],
+    cue: "Walk to me, slower than feels normal. Look at each other, not me. Bump shoulders halfway.", to: "Both", tone: "Playful",
+    capture: { height: "Waist", frames: "Burst through the walk, 2–3 passes", frame: "Wide on pass one, tighter on pass two" },
+    fails: ["Walking in step like soldiers; ask for a slower stroll", "Looking at feet", "Arms straight and locked"] },
+  { id: "p4", name: "Behind-the-back hold", subject: "Couple", f: "stacked",
+    setup: ["Groom stands behind bride, arms around her waist.", "Her hands rest on his forearms.", "His chin just above her shoulder, cheek near her temple."],
+    cue: "Get close, then closer. Now look down at her hand and give it a squeeze.", to: "Groom", tone: "Warm, direct",
+    capture: { height: "Chest", frames: "6–8", frame: "Medium; shoot once focused on each face" },
+    fails: ["His head hidden behind hers", "Arms clamped high on ribs", "Both at camera every frame"] },
+  { id: "p5", name: "Side-by-side glance", subject: "Couple", f: "open",
+    setup: ["Side by side, bodies turned 45° to camera.", "Inside arms around each other's waists.", "Front knee bent for both."],
+    cue: "Look at me for one frame. Now look at each other and try not to laugh.", to: "Both", tone: "Light, teasing",
+    capture: { height: "Chest", frames: "4 at camera, 8 at each other", frame: "Full length, then three-quarter" },
+    fails: ["Square to camera", "Locked knees", "Free hand dangling stiff"] },
+  { id: "p6", name: "Window light portrait", subject: "Bride", f: "open",
+    setup: ["Body 45° from window, face turned toward light.", "Weight on back foot, front knee soft.", "Hands holding the bouquet at the hip, not the belly."],
+    cue: "Chin out and down a touch. Breathe out through your mouth. Now look at the window like you just heard your name.", to: "Bride", tone: "Soft, reassuring",
+    capture: { height: "Just above eye level", frames: "10–15", frame: "Tight for face, then mid-length for dress" },
+    fails: ["Light hitting the far side of the face", "Bouquet held too high", "Shoulders square to camera"] },
+  { id: "p7", name: "Veil over shoulder", subject: "Bride", f: "moving",
+    setup: ["Bride walks away from camera.", "Have someone toss the veil just as she turns.", "Backlight if you can."],
+    cue: "Walk away three steps, then look back over your shoulder at me.", to: "Bride", tone: "Encouraging",
+    capture: { height: "Chest", frames: "Burst on the turn", frame: "Medium-wide" },
+    fails: ["Turning the whole body, not just the shoulders", "Veil tossed too early"] },
+  { id: "p8", name: "Jacket and cuff", subject: "Groom", f: "open",
+    setup: ["Groom angled 45°, weight on back leg.", "One hand adjusts the cuff, elbow out.", "Chin forward and slightly down."],
+    cue: "Fix your cuff like you're running late. Don't look at me.", to: "Groom", tone: "Direct, matter-of-fact",
+    capture: { height: "Chest", frames: "6–8", frame: "Three-quarter, then tight on hands" },
+    fails: ["Hands in front of crotch", "Jacket bunching; button it", "Forced grin"] },
+  { id: "p9", name: "Leaning lineup", subject: "Groomsmen", f: "stacked",
+    setup: ["Line them up shoulder to shoulder, everyone turned in toward the groom.", "Alternate hands: pockets, crossed, holding lapel.", "Groom in the center, a half step forward."],
+    cue: "Everyone turn toward the groom. Now he's going to tell you the worst joke he knows.", to: "Groom first, then group", tone: "Loud, high energy",
+    capture: { height: "Chest", frames: "Burst on the laugh", frame: "Wide, with space above heads" },
+    fails: ["Everyone with identical hands", "Groom not forward", "End people cut off at the edges"] },
+  { id: "p10", name: "Bridesmaid V", subject: "Bridesmaids", f: "hinge",
+    setup: ["Bride at the point of a V, bridesmaids angled in on each side.", "Bouquets all at hip height on the outside hand.", "Inside hands on the next person's shoulder or waist."],
+    cue: "Bouquets on your outside hip. Now everyone look at the bride, and she's going to look at me.", to: "Group", tone: "Upbeat, clear",
+    capture: { height: "Waist", frames: "6–10", frame: "Wide full length" },
+    fails: ["Bouquets at different heights", "Straight line instead of a V", "Hidden faces at the back"] },
+  { id: "p11", name: "Full party walk", subject: "Wedding party", f: "moving",
+    setup: ["Couple in front, party paired behind in two loose rows.", "Pick a long path with a clean background.", "Start well before your frame."],
+    cue: "Talk to the person next to you while you walk. Couple, kiss on my count of three.", to: "Everyone", tone: "Loud, fun",
+    capture: { height: "Waist", frames: "Burst, 2 passes", frame: "Wide" },
+    fails: ["Rows too tight, faces hidden", "Everyone walking in step", "Couple not leading"] },
+  { id: "p12", name: "Family triangle", subject: "Family", f: "stacked",
+    setup: ["Couple centered. Parents just outside them, then siblings.", "Build triangles of heads: tall in back, kids in front.", "Everyone turned slightly toward the couple."],
+    cue: "Everyone squeeze in like you like each other. Look at me, and on three say the couple's last name.", to: "Everyone", tone: "Friendly, efficient",
+    capture: { height: "Chest, slightly high", frames: "3 per grouping, check eyes", frame: "Wide, leave room to crop" },
+    fails: ["Heads all at the same height", "Gaps between people", "Someone blinking; always take 3"] },
+  { id: "p13", name: "Parent dance moment", subject: "Family", f: "closed",
+    setup: ["Bride and father (or any parent) in closed dance hold.", "Her head can rest on his shoulder.", "Find a background with depth."],
+    cue: "Slow dance for a second. Dad, tell her what you remember from when she was little.", to: "Parent", tone: "Gentle",
+    capture: { height: "Eye level", frames: "10+ through the story", frame: "Medium, then tight on her face" },
+    fails: ["Shooting before the story starts", "Faces turned away from light"] },
+  { id: "p14", name: "Swap: she holds him", subject: "Couple", f: "stacked",
+    setup: ["From the Behind-the-back hold, call Swap.", "Bride now behind groom, arms around him.", "Her chin on his shoulder."],
+    cue: "Swap! Now you hold him. Tell him a secret.", to: "Bride", tone: "Playful",
+    capture: { height: "Chest", frames: "6–8", frame: "Medium" },
+    fails: ["Bride hidden; step her out to the side a bit", "Groom stiff, have him laugh"] },
+];
+
+/* ---------- Visuals: front-view figures, numbered callouts, top-down plan ---------- */
+const COL = { a: "var(--gold)", b: "var(--sky)", g: "var(--muted)" };
+const G = 158;
+// Figure in local units: feet at 0, shoulders at -76, head at -89. Arms are [elbowX, elbowY, handX, handY].
+function fig(o) {
+  const { x, y = G, s = 1, c = "a", face = "front", head = [0, 0], dress = c === "a", legs = [0, 0], arms = {}, bouquet = null, veil = false } = o;
+  const side = face === "l" || face === "r";
+  const sw = side ? 8 : 13, col = COL[c], t = `translate(${x} ${y}) scale(${s})`, edge = `stroke="var(--surface)" stroke-width="1.5"`;
+  const hx = head[0], hy = -89 + head[1];
+  let b = "";
+  if (dress) b += `<path d="M${-sw} -76 L${sw} -76 L${sw - 3} -50 L19 0 L-19 0 L${3 - sw} -50 Z" fill="${col}" ${edge}/>`;
+  else b += `<path d="M-5 -44 L${-7 + legs[0]} 0 M5 -44 L${7 + legs[1]} 0" stroke="${col}" stroke-width="7" stroke-linecap="round"/><path d="M${-sw} -76 L${sw} -76 L10 -40 L-10 -40 Z" fill="${col}" ${edge}/>`;
+  b += `<circle cx="${hx}" cy="${hy}" r="9.5" fill="${col}" ${edge}/>`;
+  if (side) b += `<circle cx="${hx + (face === "r" ? 9 : -9)}" cy="${hy + 1}" r="2.6" fill="${col}"/>`;
+  if (face === "back" && dress) b += `<circle cx="${hx}" cy="${hy - 3}" r="4.5" fill="var(--ink)" opacity=".35"/>`;
+  if (veil) b += `<path d="M${hx - 3} ${hy - 7} Q${hx + 34} ${hy + 6} ${hx + 32} ${hy + 64} L${hx + 14} ${hy + 60} Q${hx + 14} ${hy + 22} ${hx - 1} ${hy - 1} Z" fill="var(--ink)" opacity=".16"/>`;
+  const arm = (k, sgn) => {
+    const p = arms[k] || [sgn * (sw + 3), -60, sgn * (sw + 2), -44];
+    const pts = `${sgn * sw},-74 ${p[0]},${p[1]} ${p[2]},${p[3]}`;
+    return `<polyline points="${pts}" fill="none" stroke="var(--surface)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  };
+  let a = arm("l", -1) + arm("r", 1);
+  if (bouquet) a += `<g fill="var(--ok)"><circle cx="${bouquet[0]}" cy="${bouquet[1]}" r="7"/><circle cx="${bouquet[0] - 5}" cy="${bouquet[1] - 4}" r="3.5"/><circle cx="${bouquet[0] + 5}" cy="${bouquet[1] - 4}" r="3.5"/></g>`;
+  const bb = `<g transform="${t}">${b}</g>`, aa = `<g transform="${t}">${a}</g>`;
+  return { b: bb, a: aa, all: bb + aa };
+}
+const head = (s, x, y = G) => [x, y - 89 * s]; // head centre in scene units, for callouts
+function arrowHead(x, y, ang) {
+  const L = 7, w = 0.45;
+  return `<path d="M${x} ${y} L${x - L * Math.cos(ang - w)} ${y - L * Math.sin(ang - w)} L${x - L * Math.cos(ang + w)} ${y - L * Math.sin(ang + w)} Z" fill="var(--ink)"/>`;
+}
+function arr(x1, y1, x2, y2, bend = 0) {
+  const mx = (x1 + x2) / 2 - (y2 - y1) * bend, my = (y1 + y2) / 2 + (x2 - x1) * bend;
+  return `<path d="M${x1} ${y1} Q${mx} ${my} ${x2} ${y2}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>` + arrowHead(x2, y2, Math.atan2(y2 - my, x2 - mx));
+}
+const eye = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".7"/>` + arrowHead(x2, y2, Math.atan2(y2 - y1, x2 - x1));
+const ring = (x, y) => `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="2.5 2"/>`;
+const num = (n, x, y) => `<g><circle cx="${x}" cy="${y}" r="7.5" fill="var(--ink)"/><text x="${x}" y="${y + 3.6}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--bg)" font-family="Figtree, sans-serif">${n}</text></g>`;
+// Top-down plan. People: [x, y, angle, colour]; angle 0 faces the camera (down), -90 faces right.
+function plan(cx, cy, people, extra = "", w = 64, h = 52) {
+  let s = `<g transform="translate(${cx} ${cy})"><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="8" fill="var(--bg)" stroke="var(--line)"/>`;
+  s += `<text x="${-w / 2 + 5}" y="${-h / 2 + 9}" font-size="7" fill="var(--muted)" font-family="Figtree, sans-serif" letter-spacing=".5">FROM ABOVE</text>`;
+  s += `<rect x="-5" y="${h / 2 - 7}" width="10" height="6" rx="1.5" fill="var(--muted)"/><circle cx="0" cy="${h / 2 - 4}" r="1.8" fill="var(--bg)"/>`;
+  s += extra;
+  for (const [x, y, a, c] of people) s += `<g transform="translate(${x} ${y}) rotate(${a})"><ellipse rx="8" ry="3.4" fill="${COL[c]}"/><path d="M0 0 L0 8" stroke="${COL[c]}" stroke-width="1.8" stroke-linecap="round"/><circle r="3.2" fill="${COL[c]}" stroke="var(--bg)" stroke-width="1"/></g>`;
+  return s + "</g>";
+}
+const PLANS = {
+  closed: [[-7, 0, -90, "a"], [7, 0, 90, "b"]],
+  open: [[-10, 0, -30, "a"], [10, 0, 30, "b"]],
+  hinge: [[-6, 0, -55, "a"], [6, 0, 55, "b"]],
+  stacked: [[-2, 6, 0, "a"], [4, -6, 0, "b"]],
+  moving: [[-8, -8, 0, "a"], [8, -8, 0, "b"]],
+};
+const svgWrap = (inner, label) => `<svg class="viz" viewBox="0 0 240 170" role="img" aria-label="${esc(label)}"><path d="M8 ${G} H232" stroke="var(--line)" stroke-width="1.5"/>${inner}</svg>`;
+
+function stackScene(frontC, backC) {
+  const fs = frontC === "b" ? 1.06 : 1, bs = backC === "b" ? 1.06 : 1;
+  const B = fig({ x: 132, s: bs, c: backC, head: [-2, 6], arms: { l: [-22, -58, -13, -48], r: [8, -58, -4, -46] } });
+  const A = fig({ x: 118, s: fs, c: frontC, head: [-2, 0], arms: { l: [-14, -60, -8, -50], r: [14, -60, 6, -50] } });
+  return B.b + A.b + B.a + A.a;
+}
+const SCENES = {
+  p1: () => [fig({ x: 104, c: "a", head: [8, 2], arms: { r: [19, -60, 24, -46] } }).all + fig({ x: 136, s: 1.05, c: "b", head: [-8, 2], arms: { l: [-18, -60, -22, -46] } }).all
+      + ring(120, 83) + num(1, 120, 83) + num(2, 120, 122) + num(3, 120, 48) + plan(202, 32, PLANS.hinge),
+    ["Shoulders touch: the contact point", "Hips stay apart so bodies make a V", "Heads lean in until their hair touches"]],
+  p2: () => { const A = fig({ x: 108, c: "a", face: "r", head: [7, 0], arms: { l: [-9, -60, -8, -46], r: [12, -58, 16, -70] } });
+      const B = fig({ x: 134, s: 1.05, c: "b", face: "l", head: [-7, 1], arms: { l: [-14, -58, -18, -50], r: [-10, -58, -16, -48] } });
+      return [A.b + B.b + A.a + B.a + ring(121, 66) + num(1, 121, 44) + num(2, 121, 104) + num(3, 92, 112) + plan(202, 32, PLANS.closed),
+      ["Foreheads touch, eyes closed", "Small gap between chests so light gets in", "His hands on her waist, hers on his chest"]]; },
+  p3: () => [fig({ x: 104, c: "a", head: [3, 0], arms: { r: [16, -60, 16, -46] } }).all + fig({ x: 136, s: 1.05, c: "b", legs: [6, -8], head: [-3, 0], arms: { l: [-16, -60, -15, -46] } }).all
+      + eye(110, 69, 128, 66) + arr(52, 108, 52, 152) + num(1, 120, 124) + num(2, 120, 52) + num(3, 40, 128) + plan(202, 32, PLANS.moving, arr(0, -2, 0, 12)),
+    ["Inside hands joined, outside arms loose", "Eyes on each other, not the camera", "Walk toward you, slower than feels normal"]],
+  p4: () => [stackScene("a", "b") + eye(112, 74, 117, 104) + num(1, 146, 52) + num(2, 96, 112) + num(3, 100, 74) + plan(202, 32, PLANS.stacked),
+    ["His cheek by her temple, chin above her shoulder", "Arms around her waist, not her ribs", "She looks down at his hand"]],
+  p5: () => [fig({ x: 104, c: "a", head: [3, 0], arms: { r: [18, -60, 22, -50] } }).all + fig({ x: 138, s: 1.05, c: "b", legs: [5, -2], head: [-3, 0], arms: { l: [-16, -60, -21, -50] } }).all
+      + eye(110, 70, 130, 66) + num(1, 121, 112) + num(2, 156, 140) + num(3, 120, 52) + plan(202, 32, PLANS.open),
+    ["Inside arms around each other's waists", "Front knee soft, weight on the back leg", "One frame at you, then at each other"]],
+  p6: () => { let w = `<rect x="18" y="34" width="44" height="92" rx="2" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/><path d="M40 34 V126 M18 80 H62" stroke="var(--blue)" stroke-width="1.5"/>`;
+      for (const yy of [58, 72, 86]) w += `<path d="M64 ${yy} L118 ${yy - 8 + (yy - 72) * -0.4}" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/>`;
+      return [w + fig({ x: 140, s: 1.12, c: "a", head: [-4, 2], arms: { l: [-10, -58, -6, -42], r: [10, -58, -4, -42] }, bouquet: [-5, -40] }).all
+      + num(1, 40, 24) + num(2, 160, 52) + num(3, 112, 118) + plan(202, 32, [[8, 0, 45, "a"]], `<path d="M-26 -14 V14" stroke="var(--blue)" stroke-width="3"/>`),
+      ["Turn her face toward the window light", "Chin out and slightly down", "Bouquet at the hip, not the belly"]]; },
+  p7: () => [fig({ x: 124, s: 1.1, c: "a", face: "back", head: [4, 0], veil: true }).all + arr(62, 150, 62, 104) + num(1, 48, 126) + num(2, 144, 46) + num(3, 172, 96)
+      + plan(202, 32, [[0, 0, 180, "a"]], arr(10, 10, 10, -10)),
+    ["Walk three steps away", "Turn only the shoulders and look back", "Toss the veil just as she turns"]],
+  p8: () => [fig({ x: 124, s: 1.15, c: "b", head: [3, 3], legs: [0, 3], arms: { l: [-26, -60, -4, -58], r: [12, -56, -2, -58] } }).all + eye(134, 58, 158, 66)
+      + num(1, 84, 84) + num(2, 166, 78) + num(3, 150, 112) + plan(202, 32, [[0, 0, -35, "b"]]),
+    ["Elbow out to make space", "Eyes off camera, chin forward and down", "Jacket buttoned, weight on the back leg"]],
+  p9: () => { const pk = [[-14, -56, -9, -46], [14, -56, 9, -46]], cr = [[-6, -60, 8, -62], [6, -60, -8, -62]];
+      const men = [[40, 4, pk], [80, 4, cr], [160, -4, cr], [200, -4, pk]];
+      let s = men.map(([x, d, ar]) => fig({ x, s: 0.7, c: "g", head: [d, 0], arms: { l: ar[0], r: ar[1] } }).all).join("");
+      s += fig({ x: 120, y: G + 6, s: 0.76, c: "b", arms: { l: [-10, -58, -2, -48], r: [10, -58, 2, -48] } }).all;
+      return [s + num(1, 120, 76) + num(2, 18, 116) + num(3, 80, 78) + plan(202, 32, [[-24, -4, -25, "g"], [-12, -4, -15, "g"], [0, 4, 0, "b"], [12, -4, 15, "g"], [24, -4, 25, "g"]]),
+      ["Groom in the centre, half a step forward", "Mix up hands: pockets, crossed, lapel", "Everyone turned toward the groom"]]; },
+  p10: () => { const bm = (x, y, s, sgn) => fig({ x, y, s, c: "g", dress: true, head: [-sgn * 3, 0], bouquet: [sgn * 15, -40], arms: sgn < 0 ? { l: [-16, -56, -15, -42] } : { r: [16, -56, 15, -42] } }).all;
+      let s = bm(48, G - 12, 0.66, -1) + bm(192, G - 12, 0.66, 1) + bm(84, G - 6, 0.73, -1) + bm(156, G - 6, 0.73, 1);
+      s += fig({ x: 120, s: 0.82, c: "a", bouquet: [0, -42], arms: { l: [-10, -58, -4, -44], r: [10, -58, 4, -44] } }).all;
+      s += `<path d="M36 147 L120 160 L204 147" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/>`;
+      return [s + num(1, 120, 70) + num(2, 26, 124) + num(3, 84, 86) + plan(202, 32, [[-22, -10, -25, "g"], [-11, -3, -15, "g"], [0, 6, 0, "a"], [11, -3, 15, "g"], [22, -10, 25, "g"]]),
+      ["Bride at the point of the V, looking at camera", "Bouquets on the outside hip, all at one height", "Everyone else looks at the bride"]]; },
+  p11: () => { let s = [55, 80, 160, 185].map((x, i) => fig({ x, y: G - 14, s: 0.58, c: "g", dress: i % 2 === 1, head: [i % 2 ? -3 : 3, 0] }).all).join("");
+      s += fig({ x: 106, s: 0.8, c: "a", arms: { r: [17, -60, 17, -46] } }).all + fig({ x: 134, s: 0.84, c: "b", arms: { l: [-16, -60, -16, -46] } }).all;
+      return [s + arr(222, 96, 222, 152) + num(1, 120, 72) + num(2, 68, 74) + num(3, 222, 82) + plan(30, 32, [[-12, -8, 0, "g"], [-4, -8, 0, "g"], [4, -8, 0, "g"], [12, -8, 0, "g"], [-6, 6, 0, "a"], [6, 6, 0, "b"]]),
+      ["Couple leads", "Pairs behind talk to each other as they walk", "Long path toward you; shoot two passes"]]; },
+  p12: () => { let s = [[52, 0.72], [86, 0.76], [154, 0.76], [188, 0.72]].map(([x, sc], i) => fig({ x, y: G - 10, s: sc, c: "g", dress: i === 1 || i === 3, head: [i < 2 ? 3 : -3, 0] }).all).join("");
+      s += fig({ x: 108, s: 0.78, c: "a" }).all + fig({ x: 132, s: 0.82, c: "b" }).all;
+      s += fig({ x: 70, y: G + 2, s: 0.44, c: "g", dress: true }).all + fig({ x: 170, y: G + 2, s: 0.44, c: "g" }).all;
+      s += `<path d="M70 121 L120 86 L170 121 Z" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".55"/>`;
+      return [s + num(1, 120, 70) + num(2, 120, 132) + num(3, 52, 68) + plan(202, 32, PLANS.stacked),
+      ["Couple in the centre", "Vary head heights; build triangles", "Everyone turned slightly toward the couple"]]; },
+  p13: () => { const A = fig({ x: 112, c: "a", face: "r", head: [6, 5], arms: { l: [-12, -64, -12, -76], r: [10, -66, 11, -78] } });
+      const P = fig({ x: 132, s: 1.08, c: "g", face: "l", head: [-3, 0], arms: { l: [-18, -66, -29, -70], r: [-14, -58, -24, -52] } });
+      return [A.b + P.b + A.a + P.a + num(1, 96, 52) + num(2, 150, 46) + plan(202, 32, [[-7, 0, -90, "a"], [7, 0, 90, "g"]]),
+      ["Her head on his shoulder, slow sway", "He tells a story from when she was little"]]; },
+  p14: () => [stackScene("b", "a") + num(1, 146, 52) + num(2, 96, 112) + plan(202, 32, [[-2, 6, 0, "b"], [4, -6, 0, "a"]]),
+    ["Swap: she steps behind him", "Her arms around him, chin on his shoulder"]],
+};
+const BASE = { closed: "p2", open: "p5", hinge: "p1", stacked: "p4", moving: "p3" };
+// Plain scene (no callout numbers) for thumbnails, custom cards and Method.
+function sceneFor(p, withNums = true) {
+  const fn = SCENES[p.id] || SCENES[BASE[p.f]];
+  let [svg, notes] = fn();
+  if (!withNums || !SCENES[p.id]) { svg = svg.replace(/<g><circle cx="[\d.]+" cy="[\d.]+" r="7.5"[\s\S]*?<\/g>/g, ""); notes = SCENES[p.id] ? notes : []; }
+  return { svg: svgWrap(svg, p.name + " pose diagram"), notes };
+}
+function movePlan(from, to, label) {
+  return `<svg class="mv" viewBox="0 0 150 52" role="img" aria-label="${esc(label)}">${plan(32, 26, from)}${arr(68, 26, 82, 26)}${plan(118, 26, to)}</svg>`;
+}
+const MOVE_PLANS = {
+  "Turn Out": [PLANS.closed, PLANS.open], "Turn In": [PLANS.open, PLANS.closed], "Step Behind": [PLANS.open, PLANS.stacked],
+  Swap: [PLANS.stacked, [[-2, 6, 0, "b"], [4, -6, 0, "a"]]], Stroll: [PLANS.open, PLANS.moving], Glance: [PLANS.open, [[-10, 0, -70, "a"], [10, 0, 70, "b"]]],
+};
+
+/* ---------- Camera: framing → distance, depth of field → aperture ---------- */
+const SENSORS = { ff: { name: "Full frame", crop: 1 }, apsc: { name: "APS-C (Nikon, Sony, Fuji 1.5×)", crop: 1.5 }, canon: { name: "APS-C (Canon 1.6×)", crop: 1.6 } };
+const LENSES = {
+  "35p": { name: "35mm f/1.8", min: 35, max: 35, ap: [[35, 1.8]] },
+  "50p": { name: "50mm f/1.8", min: 50, max: 50, ap: [[50, 1.8]] },
+  "85p": { name: "85mm f/1.8", min: 85, max: 85, ap: [[85, 1.8]] },
+  "2470": { name: "24–70mm f/2.8", min: 24, max: 70, ap: [[24, 2.8], [70, 2.8]] },
+  "2875": { name: "28–75mm f/2.8", min: 28, max: 75, ap: [[28, 2.8], [75, 2.8]] },
+  "24105": { name: "24–105mm f/4", min: 24, max: 105, ap: [[24, 4], [105, 4]] },
+  "2870k": { name: "28–70mm f/3.5–5.6 kit", min: 28, max: 70, ap: [[28, 3.5], [50, 4.5], [70, 5.6]] },
+  "1855": { name: "18–55mm f/3.5–5.6 kit", min: 18, max: 55, ap: [[18, 3.5], [24, 4], [35, 4.5], [45, 5], [55, 5.6]] },
+  "18135": { name: "18–135mm f/3.5–5.6", min: 18, max: 135, ap: [[18, 3.5], [35, 4.5], [70, 5.6], [135, 5.6]] },
+  "70200": { name: "70–200mm f/2.8", min: 70, max: 200, ap: [[70, 2.8], [200, 2.8]] },
+};
+// S = long side of the frame in metres (portrait orientation for 1–2 people, landscape for groups).
+// ideal = full-frame-equivalent focal length that flatters this framing; depth = how much front-to-back must be sharp (m).
+const SHOTS = {
+  tight1: { name: "Head & shoulders", S: 0.6, ideal: 85, depth: 0.03, minN: 1.8, face: true },
+  tight2: { name: "Two faces, close", S: 0.7, ideal: 85, depth: 0.07, minN: 2.5, face: true },
+  half1: { name: "Waist up", S: 1.0, ideal: 70, depth: 0.05, minN: 1.8, face: true },
+  half2: { name: "Couple, waist up", S: 1.1, ideal: 70, depth: 0.15, minN: 2.5, face: true },
+  full1: { name: "Full length", S: 2.0, ideal: 50, depth: 0.15, minN: 1.8 },
+  full2: { name: "Couple, full length", S: 2.1, ideal: 50, depth: 0.3, minN: 2.5 },
+  group6: { name: "Group of 3–6", S: 3.5, ideal: 35, depth: 0.6, minN: 4, group: true },
+  group12: { name: "Group of 7–15", S: 6, ideal: 35, depth: 1.0, minN: 5.6, group: true },
+  group20: { name: "Group of 16+", S: 9, ideal: 28, depth: 1.5, minN: 8, group: true },
+  wide: { name: "Wide scene", S: 7, ideal: 28, depth: 0.5, minN: 2.8 },
+};
+const STOPS = [1.4, 1.8, 2, 2.2, 2.5, 2.8, 3.2, 3.5, 4, 4.5, 5, 5.6, 6.3, 7.1, 8, 9, 10, 11, 13, 16];
+const SPEEDS = [30, 60, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000];
+function lensMaxAp(L, f) {
+  const a = L.ap, last = a[a.length - 1];
+  let v = f <= a[0][0] ? a[0][1] : last[1];
+  for (let i = 1; i < a.length; i++) if (f > a[i - 1][0] && f <= a[i][0]) v = a[i - 1][1] + (a[i][1] - a[i - 1][1]) * (f - a[i - 1][0]) / (a[i][0] - a[i - 1][0]);
+  return STOPS.find(s => s >= v - 0.05) || v;
+}
+function dofMetres(f, N, c, d) { // thin-lens depth of field, f and c in mm, d in m
+  const H = f * f / (N * c), x = d * 1000, near = H * x / (H + x), far = x < H ? H * x / (H - x) : Infinity;
+  return (far - near) / 1000;
+}
+function calc(shotKey, lensKey, depth, sensorKey = state.gear.sensor) {
+  const sh = SHOTS[shotKey], L = LENSES[lensKey], crop = SENSORS[sensorKey].crop;
+  const long = 36 / crop, c = 0.025 / crop;
+  const f = Math.round(Math.min(L.max, Math.max(L.min, sh.ideal / crop)));
+  const d = f * sh.S / long;
+  const need = depth ?? sh.depth, maxAp = lensMaxAp(L, f);
+  let N = STOPS.find(s => s >= Math.max(maxAp, sh.minN) - 0.05);
+  while (dofMetres(f, N, c, d) < need && N < 16) N = STOPS[STOPS.indexOf(N) + 1];
+  const eq = f * crop;
+  let warn = "";
+  if (sh.face && d < 1.0) warn = "Very close: noses and hands look bigger. Step back and crop, or use a longer lens.";
+  else if (sh.group && d > 15) warn = "Hard to direct a group from this far. A wider lens lets you stand closer.";
+  else if (shotKey === "tight1" && eq < 50) warn = "Wide lens for a face. Fine for a candid, but not flattering for a portrait.";
+  return { f, d, N, eq, maxAp, zoom: L.min !== L.max, dof: dofMetres(f, N, c, d), warn };
+}
+const fmtD = d => `${d < 10 ? d.toFixed(1) : Math.round(d)} m`;
+const fmtFt = d => `${Math.round(d * 3.281 * (d < 3 ? 2 : 1)) / (d < 3 ? 2 : 1)} ft`;
+const fmtDof = m => m === Infinity || m > 50 ? "everything" : m < 1 ? `${Math.round(m * 100)} cm` : `${m.toFixed(1)} m`;
+function shutterFor(motion, eq) {
+  const min = { walk: 500, fast: 1000, group: 250 }[motion] || Math.max(2 * eq, 160);
+  return "1/" + SPEEDS.find(s => s >= min);
+}
+// Per-pose: which shots to take, how deep the subjects stand, how fast they move, and lighting notes.
+const CAM = {
+  p1: { shots: ["half2", "full2", "tight2"], depth: 0.15, motion: "still",
+    nat: "Open shade, or the sun behind them at golden hour. Expose for faces: +0.7 to +1 EV when backlit.",
+    flash: "Off-camera flash 45° to one side, just above eye level, about 2 m away: 1/8 power in an umbrella. Or on-camera TTL at −1 EV as gentle fill." },
+  p2: { shots: ["tight2", "half2"], depth: 0.06, motion: "still",
+    nat: "Backlight makes the gap between their faces glow. Avoid overhead midday sun; it puts shadows in the eyes.",
+    flash: "Low power from the side their faces turn toward: off-camera 1/16, or bounce off a wall on that side. Keep it subtle." },
+  p3: { shots: ["full2", "wide"], depth: 0.3, motion: "walk",
+    nat: "Side light or backlight. AF-C with tracking or zone AF; let them walk into the focus area.",
+    flash: "Usually skip it: flash can't recycle for a burst. At dusk, one off-camera flash on a stand at 1/4 power and one frame per pass." },
+  p4: { shots: ["half2", "tight2"], depth: 0.15, motion: "still",
+    nat: "Light from the front-side so both faces are lit. Focus on the front face, then do a set focused on the back face.",
+    flash: "Put the off-camera key on the back person's side so it reaches both faces. 1/8 power at about 2 m." },
+  p5: { shots: ["full2", "half2"], depth: 0.2, motion: "still",
+    nat: "Even light: open shade or overcast. If the sun is behind them, spot-meter a face and add +1 EV.",
+    flash: "Fill in sun: TTL at −1 to −1.7 EV, 1/200 at f/5.6, or HSS for wider apertures." },
+  p6: { shots: ["half1", "tight1", "full1"], depth: 0.08, motion: "still",
+    nat: "The window is the only light. Turn off room lights so colours don't mix. Expose for the bright side of the face, about −0.3 EV.",
+    flash: "Usually not needed. In a dark room, bounce flash off the wall on the window side to stretch the window light. TTL −1 EV." },
+  p7: { shots: ["full1", "wide"], depth: 0.3, motion: "fast",
+    nat: "Backlight makes the veil glow. Use 1/1000 or faster to freeze the toss.",
+    flash: "Not needed in daylight. At dusk, an off-camera HSS flash behind her makes a rim of light on the veil." },
+  p8: { shots: ["half1", "tight1"], depth: 0.1, motion: "still",
+    nat: "Window or doorway light from the side he's looking toward.",
+    flash: "Bounce off a wall to the side he looks toward, not the ceiling. TTL −0.3 EV." },
+  p9: { shots: ["group6", "full2"], depth: 0.6, motion: "group",
+    nat: "Open shade with even light on every face. Avoid dappled sun through trees.",
+    flash: "One big umbrella high and centred, or one flash each side of the camera: 1/4 power at about 3 m, ISO 200–400." },
+  p10: { shots: ["group6", "group12"], depth: 0.8, motion: "group",
+    nat: "Sun behind the group, faces in shade. Expose for faces.",
+    flash: "Fill from on-camera TTL −1 EV outdoors. Indoors, bounce TTL +0.3 EV, or two off-camera flashes at 1/4 power." },
+  p11: { shots: ["group12", "wide"], depth: 1.5, motion: "walk",
+    nat: "Light from behind or the side. Pre-focus on the couple's starting mark, AF-C tracking on the couple.",
+    flash: "Skip flash for walking groups; the falloff from front to back row is too uneven." },
+  p12: { shots: ["group6", "group12", "group20"], depth: 1.0, motion: "group",
+    nat: "Even shade, sun behind the group so no one squints. Focus on a face in the front third of the group.",
+    flash: "Two flashes in umbrellas at 45° on each side, about 3 m from the group: 1/4–1/2 power, ISO 400, f/8." },
+  p13: { shots: ["half2", "tight2"], depth: 0.15, motion: "still",
+    nat: "Receptions are dim: open the lens up and let Auto ISO climb to 6400. Use 1/250 for a slow sway.",
+    flash: "Bounce behind you off a wall, TTL. Or an off-camera rim light behind them at 1/16 power for glow." },
+  p14: { shots: ["half2", "tight2"], depth: 0.15, motion: "still",
+    nat: "Same as the hold: light from the front-side so both faces are lit. Refocus after the swap.",
+    flash: "Move the off-camera key to the new back person's side. 1/8 power at about 2 m." },
+};
+function camFor(p) {
+  if (CAM[p.id]) return CAM[p.id];
+  const grp = ["Bridesmaids", "Groomsmen", "Wedding party", "Family"].includes(p.subject);
+  const one = p.subject === "Bride" || p.subject === "Groom";
+  return { shots: grp ? ["group6", "group12"] : one ? ["half1", "full1"] : ["half2", "full2"], depth: grp ? 0.8 : one ? 0.1 : 0.25, motion: p.f === "moving" ? "walk" : grp ? "group" : "still",
+    nat: "Open shade or backlight. Expose for faces.", flash: "On-camera bounce TTL indoors; off-camera key 45° to the side outdoors." };
+}
+
+function shotDepth(k, cam) { const sh = SHOTS[k]; return sh.face ? Math.min(cam.depth, sh.depth * 1.5) : Math.max(cam.depth, sh.depth); }
+function flashShutter(nat) { return parseInt(nat.slice(2)) > 250 ? "1/200, or HSS for " + nat : "1/200"; }
+function camHtml(p) {
+  const cam = camFor(p), lenses = state.gear.lenses.filter(k => LENSES[k]);
+  const head = `<div class="row spread"><span class="label">Camera settings</span><button class="btn small" data-tab="camera">Your gear</button></div>`;
+  if (!lenses.length) return head + `<p class="muted">Pick the lenses you own in the Camera tab and settings appear here.</p>`;
+  const lk = lenses.includes(ui.lens) ? ui.lens : (bestLens(cam.shots[0])?.k || lenses[0]), light = ui.light === "flash" ? "flash" : "nat";
+  const apsc = state.gear.sensor !== "ff";
+  const rows = cam.shots.map(k => {
+    const r = calc(k, lk, shotDepth(k, cam)), nat = shutterFor(cam.motion, r.eq);
+    return { k, r, sh: light === "flash" ? flashShutter(nat) : nat };
+  });
+  const warns = [...new Set(rows.map(x => x.r.warn).filter(Boolean))];
+  return head + `
+    <div class="chips" role="group" aria-label="Lens">${lenses.map(k => `<button class="chip" data-lenspick="${k}" data-pid="${p.id}" aria-pressed="${k === lk}">${LENSES[k].name}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Light"><button data-lightpick="nat" data-pid="${p.id}" aria-pressed="${light === "nat"}">Natural light</button><button data-lightpick="flash" data-pid="${p.id}" aria-pressed="${light === "flash"}">Flash</button></div>
+    <div class="tbl-wrap"><table class="set"><thead><tr><th>Shot</th><th>Stand back</th><th>Aperture</th><th>Shutter</th></tr></thead><tbody>
+    ${rows.map(({ k, r, sh }) => `<tr><td><b>${SHOTS[k].name}</b>${r.zoom ? `<span>at ${r.f}mm</span>` : ""}</td>
+      <td class="num">${fmtD(r.d)}<span>${fmtFt(r.d)}</span></td>
+      <td class="num">f/${r.N}<span>sharp ${fmtDof(r.dof)}</span></td><td class="num">${sh}</td></tr>`).join("")}</tbody></table></div>
+    <dl class="kv"><dt>ISO</dt><dd>${light === "nat" ? `Auto ISO, capped at ${apsc ? "3200" : "6400"}. Let it rise before you slow the shutter.` : "100–200 outdoors; 400–1600 indoors so the room still shows."}</dd>
+      <dt>${light === "nat" ? "Light" : "Flash"}</dt><dd>${esc(cam[light])}</dd>
+      <dt>Focus</dt><dd>${cam.motion === "walk" || cam.motion === "fast" ? "AF-C with tracking; burst mode." : cam.motion === "group" ? "AF-S on a face in the front third of the group." : "Eye AF on the nearest eye."}</dd></dl>
+    ${warns.map(w => `<p class="warn">${esc(w)}</p>`).join("")}`;
+}
+
+/* ---------- Camera tab content ---------- */
+const NATURAL = [
+  { name: "Harsh midday sun", ap: "f/4–5.6 (f/1.8 needs 1/4000+)", sh: "1/1000–1/2000", iso: "100", wb: "Daylight, 5200K", tip: "Turn them so the sun is behind them, then add +0.7 to +1 EV for faces. Better still, move into open shade." },
+  { name: "Open shade", ap: "f/1.8–2.8", sh: "1/500", iso: "100–400", wb: "Shade, ~6500K", tip: "Stand them at the edge of the shade, facing out toward the open sky for catchlights. Watch for a blown-out background." },
+  { name: "Golden hour, backlit", ap: "f/1.8–2.8", sh: "1/500", iso: "200–800, rising as the sun drops", wb: "Daylight 5500K; keep the warmth", tip: "Spot-meter a face, +1 EV. Partly hide the sun behind a head for controlled flare, or use a lens hood for contrast." },
+  { name: "Overcast", ap: "f/2.8", sh: "1/500", iso: "200–800", wb: "Cloudy, ~6000K", tip: "Soft, even light. Add a reflector under the chin or find a wall to block overhead light for shape." },
+  { name: "Blue hour", ap: "f/1.8–2.8", sh: "1/125–1/200", iso: "1600–6400", wb: "4500–5000K", tip: "Faces fall dark fast. Add a flash (see Flash) or a video light for the couple." },
+  { name: "Window light indoors", ap: "f/1.8–2.8", sh: "1/200", iso: "400–1600", wb: "Auto or 5500K", tip: "Turn off room lights. Face toward the window at 45°. Expose for the bright side of the face." },
+  { name: "Church or indoor ceremony", ap: "f/1.8–2.8", sh: "1/250 (1/500 for the processional)", iso: "1600–12800", wb: "Measure with a grey card, often 3200–4000K", tip: "Silent shutter, no flash unless the officiant allows it. Shoot RAW and fix colour later." },
+  { name: "Reception, ambient only", ap: "f/1.8–2", sh: "1/160–1/200", iso: "3200–6400", wb: "3200–3800K for tungsten", tip: "Good for candids and toasts with uplighting. Switch to flash for dancing." },
+];
+const FLASH = [
+  { name: "On-camera bounce indoors", ap: "f/2.8–4", sh: "1/100–1/160", iso: "800–1600", flash: "TTL, FEC 0 to +0.3; or manual 1/16 power", tip: "Point the head behind you and to the side, at a wall or ceiling corner. Never straight up: that makes raccoon eyes. Getting ready, receptions, details." },
+  { name: "Fill flash in daylight", ap: "f/5.6 at 1/200, or f/2–2.8 with HSS", sh: "1/200 (HSS 1/1000–1/4000)", iso: "100", flash: "TTL, FEC −1 to −1.7", tip: "Fills in eye shadows and lifts backlit faces. HSS costs about 2 stops of flash power; move the flash closer." },
+  { name: "Off-camera key at golden or blue hour", ap: "f/2.8–4", sh: "1/200", iso: "200–800", flash: "Manual 1/8 in an umbrella or softbox; 1/32 bare", tip: "Light 45° to one side, a bit above eye level, 1.5–2 m from the couple. Underexpose the sky 1–2 stops with shutter or ISO, then set flash power for faces." },
+  { name: "Dance floor: drag the shutter", ap: "f/2.8–4", sh: "1/30–1/60", iso: "1600–3200", flash: "TTL bounce, rear-curtain sync; optional off-camera rim behind at 1/16", tip: "The flash freezes people, the slow shutter picks up the room's lights and motion. Raise ISO for more room light, not flash power." },
+  { name: "Indoor group formals", ap: "f/5.6–8", sh: "1/125–1/200", iso: "400–800", flash: "Two flashes in umbrellas, 45° each side, ~3 m from group: 1/4–1/2 power. One flash: bounce TTL +0.3", tip: "Lights a little above head height and angled down so glasses don't reflect. Test once, then lock in manual." },
+  { name: "Rings and details", ap: "f/4–8", sh: "1/200", iso: "100–400", flash: "Off-camera small flash or LED at 1/64–1/32, close and to the side", tip: "Side light shows sparkle and texture. Use a dark background so the ring stands out." },
+];
+const SHOOTS = [
+  { name: "Getting ready", shot: "full1", lens: "35mm or 24–70", ap: "f/2–2.8", sh: "1/200", iso: "Auto, cap 6400", af: "AF-C, eye AF", fl: "Window light, or bounce flash behind you", tip: "Clear the clutter first. Shoot toward the window side." },
+  { name: "Details and rings", shot: null, lens: "50mm, 85mm or a 100mm macro", ap: "f/2.8–4; rings f/5.6–8", sh: "1/200", iso: "400–1600", af: "AF-S, single point", fl: "Window, or a small off-camera light from the side", tip: "Get as close as the lens focuses: 50mm f/1.8 about 0.45 m, 85mm about 0.8 m, 24–70 about 0.38 m." },
+  { name: "Ceremony: processional", shot: "full1", lens: "70–200mm or 85mm", ap: "f/2.8", sh: "1/500", iso: "Auto, cap 12800", af: "AF-C tracking, zone", fl: "No flash", tip: "Pre-focus on the aisle and shoot every step. Wider for the reveal of the room." },
+  { name: "Ceremony: vows and rings", shot: "half2", lens: "70–200mm at 135–200", ap: "f/2.8–4", sh: "1/250", iso: "Auto, cap 12800", af: "AF-C, eye AF", fl: "No flash; silent shutter", tip: "Find the officiant-free angle early. Get both faces in one frame for the vows." },
+  { name: "Family formals", shot: "group12", lens: "24–70 at 35–50mm", ap: "f/5.6–8", sh: "1/200", iso: "400–800 with flash; Auto outdoors", af: "AF-S on a front-row face", fl: "Two umbrellas, or bounce TTL +0.3", tip: "Use a tripod so framing stays put. Three frames per grouping; check eyes before moving on." },
+  { name: "Couple portraits", shot: "full2", lens: "85mm or 50mm", ap: "f/1.8–2.8", sh: "1/500", iso: "Auto", af: "AF-C, eye AF", fl: "Off-camera key at golden or blue hour", tip: "Do the wide frame first, then step in for the close-up without changing the pose." },
+  { name: "Wedding party", shot: "group12", lens: "35mm or 24–70", ap: "f/4–5.6", sh: "1/500", iso: "Auto", af: "AF-C on the couple", fl: "Fill flash −1 EV in sun", tip: "One posed frame, then give them something to do for the fun ones." },
+  { name: "Reception: toasts", shot: "half1", lens: "70–200mm or 85mm", ap: "f/2–2.8", sh: "1/200", iso: "3200–6400", af: "AF-C, eye AF", fl: "Ambient, or bounce TTL", tip: "Shoot the speaker, then turn fast for the couple's reaction." },
+  { name: "Reception: dancing", shot: "full2", lens: "24–35mm", ap: "f/2.8–4", sh: "1/30–1/60", iso: "1600–3200", af: "AF-C", fl: "Bounce, rear-curtain sync; off-camera rim behind", tip: "Get in close with a wide lens; it pulls the viewer onto the dance floor." },
+  { name: "Engagement or golden hour", shot: "full2", lens: "85mm or 50mm", ap: "f/1.8–2.8", sh: "1/500", iso: "100–800", af: "AF-C, eye AF", fl: "Reflector, or off-camera fill after sunset", tip: "Start an hour before sunset; the best 20 minutes are the last ones." },
+  { name: "Family session with kids", shot: "group6", lens: "35mm or 24–70", ap: "f/2.8–4", sh: "1/500–1/1000", iso: "Auto", af: "AF-C tracking", fl: "Fill flash only in harsh sun", tip: "Kids move: fast shutter, games instead of poses, shoot from their eye height." },
+  { name: "Headshots", shot: "tight1", lens: "85mm (or 70–200)", ap: "f/2.8–4", sh: "1/250", iso: "100–400", af: "AF-S, eye AF", fl: "Key light 45° to the side, reflector under", tip: "Chin out and down. Shoot slightly above eye level." },
+  { name: "Events and corporate", shot: "half1", lens: "24–70mm", ap: "f/2.8–4", sh: "1/160", iso: "1600–3200", af: "AF-C", fl: "Bounce TTL", tip: "Shoot the speaker's gestures and the crowd's reactions, not just the stage." },
+];
+const RULES = [
+  ["People standing still", "Shutter at least 1/(2 × focal length), and never slower than 1/160. With 85mm that's 1/200."],
+  ["Walking, dancing, veil tosses", "Walking 1/500. Jumping, spinning, kids running, veil toss: 1/1000 or faster."],
+  ["Rows decide the aperture", "One row f/4. Two rows f/5.6. Three or more rows f/8. Focus on a face about a third of the way into the group."],
+  ["Focus", "Eye AF on the nearest eye. For two faces at different distances, either stop down or pick the face that matters."],
+  ["ISO", "Full frame is clean to about 6400, APS-C to about 3200. A sharp grainy photo beats a blurry clean one."],
+  ["Flash sync", "Most cameras sync at 1/200–1/250. Faster needs high-speed sync (HSS), which costs about 2 stops of power."],
+  ["Two exposures in one", "With flash, the shutter controls the background and flash power controls the subject. Change one at a time."],
+  ["Flattering distance", "Stand back. Faces look most natural from 1.5 m or more. That's why 85mm (full frame) or 50mm (APS-C) is the classic portrait lens."],
+];
+function bestLens(shotKey) {
+  const ls = state.gear.lenses.filter(k => LENSES[k]); if (!ls.length) return null;
+  const crop = SENSORS[state.gear.sensor].crop, ideal = SHOTS[shotKey].ideal;
+  return ls.map(k => ({ k, r: calc(shotKey, k) })).sort((a, b) => Math.abs(a.r.eq - ideal) - Math.abs(b.r.eq - ideal) || a.r.maxAp - b.r.maxAp)[0];
+}
+const kvCard = (title, rows, tip) => `<div class="card"><h3>${title}</h3><dl class="kv">${rows.filter(r => r[1]).map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl>${tip ? `<p class="muted">${tip}</p>` : ""}</div>`;
+function viewCamera() {
+  const sec = ui.camSec || "chart", g = state.gear, ls = g.lenses.filter(k => LENSES[k]);
+  const gear = `<div class="card"><span class="label">Your gear</span>
+    <label class="label" for="sensor">Camera sensor</label>
+    <select id="sensor">${Object.entries(SENSORS).map(([k, s]) => `<option value="${k}" ${g.sensor === k ? "selected" : ""}>${s.name}</option>`).join("")}</select>
+    <span class="label">Lenses you own (tap to toggle)</span>
+    <div class="chips wrap-chips">${Object.entries(LENSES).map(([k, l]) => `<button class="chip" data-lenstoggle="${k}" aria-pressed="${ls.includes(k)}">${l.name}</button>`).join("")}</div></div>`;
+  const tabs = [["chart", "Lens chart"], ["natural", "Natural light"], ["flash", "Flash"], ["shoots", "By shoot"], ["rules", "Rules"]];
+  let body = "";
+  if (sec === "chart") {
+    body = ls.length ? `<p class="muted">Where to stand and which aperture keeps everyone sharp, for each lens you own. Portrait orientation for one or two people, landscape for groups.</p>
+      <div class="tbl-wrap"><table class="set chart"><thead><tr><th>Shot</th>${ls.map(k => `<th>${LENSES[k].name}</th>`).join("")}</tr></thead><tbody>
+      ${Object.entries(SHOTS).map(([k, s]) => `<tr><td><b>${s.name}</b></td>${ls.map(l => { const r = calc(k, l); return `<td class="num ${r.warn ? "flag" : ""}" ${r.warn ? `title="${esc(r.warn)}"` : ""}>${fmtD(r.d)}<span>${fmtFt(r.d)}</span><b class="ap">f/${r.N}</b>${r.zoom ? `<span>at ${r.f}mm</span>` : ""}</td>`; }).join("")}</tr>`).join("")}
+      </tbody></table></div>
+      <p class="muted" style="font-size:13px">Shaded cells are possible but not ideal: too close for flattering faces, or too far to direct a group. Apertures never go wider than your lens allows and include a safety margin for focus.</p>`
+      : `<p class="empty">Tap the lenses you own above to build your chart.</p>`;
+  } else if (sec === "natural") {
+    body = NATURAL.map(n => kvCard(n.name, [["Aperture", n.ap], ["Shutter", n.sh], ["ISO", n.iso], ["White balance", n.wb]], n.tip)).join("");
+  } else if (sec === "flash") {
+    body = FLASH.map(n => kvCard(n.name, [["Aperture", n.ap], ["Shutter", n.sh], ["ISO", n.iso], ["Flash", n.flash]], n.tip)).join("");
+  } else if (sec === "shoots") {
+    body = SHOOTS.map(s => { const b = s.shot && bestLens(s.shot);
+      const yours = b ? `${LENSES[b.k].name}${b.r.zoom ? ` at ${b.r.f}mm` : ""}: stand ${fmtD(b.r.d)} (${fmtFt(b.r.d)}) back for a ${SHOTS[s.shot].name.toLowerCase()} frame` : "";
+      return kvCard(s.name, [["Lens", s.lens], ["With your kit", yours], ["Aperture", s.ap], ["Shutter", s.sh], ["ISO", s.iso], ["Focus", s.af], ["Light", s.fl]], s.tip); }).join("");
+  } else {
+    body = `<div class="card">${RULES.map(([a, b]) => `<div><h3>${a}</h3><p class="muted">${b}</p></div>`).join("")}</div>`;
+  }
+  return `<div class="view">${gear}
+    <div class="chips" role="tablist" aria-label="Guide section">${tabs.map(([k, n]) => `<button class="chip" data-camsec="${k}" aria-pressed="${sec === k}">${n}</button>`).join("")}</div>
+    ${body}</div>`;
+}
+
+/* ---------- State + storage ---------- */
+const LS = "cue-pocket-v1";
+const sample = () => ({
+  notes: {}, mine: [], photos: {},
+  gear: { sensor: "ff", lenses: ["35p", "50p", "85p", "2470"] },
+  boards: [{ id: "b1", name: "Example: Saturday wedding", items: [
+    { id: "i1", text: "Shoulder lean", pose: "p1", done: true },
+    { id: "i2", text: "Window light portrait", pose: "p6", done: false },
+    { id: "i3", text: "Family: couple + both sets of parents", done: false },
+    { id: "i4", text: "Request: photo with the dog", done: false },
+    { id: "i5", text: "Experiment: reflection in the venue fountain", done: false },
+  ]}],
+  light: { place: "kc", lat: 39.0997, lng: -94.5786, tz: "America/Chicago", date: "" },
+});
+let state = sample();
+try { const s = JSON.parse(localStorage.getItem(LS)); if (s) state = Object.assign(sample(), s); } catch (e) {}
+let ui = { tab: "cards", subject: "All", found: "all", q: "", board: null };
+try { const u = JSON.parse(localStorage.getItem(LS + "-ui")); if (u) ui = Object.assign(ui, u); } catch (e) {}
+
+let dbDoc = null, assets = null, saveTimer = null, writing = Promise.resolve();
+const syncEl = document.getElementById("sync");
+function save() {
+  try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {}
+  if (!dbDoc) return;
+  clearTimeout(saveTimer);
+  syncEl.textContent = "Saving…";
+  saveTimer = setTimeout(() => {
+    const body = JSON.parse(JSON.stringify(state));
+    writing = writing.then(() => dbDoc.set(body)).then(
+      () => { syncEl.textContent = "Synced"; },
+      () => { syncEl.textContent = "Saved on this device"; });
+  }, 700);
+}
+function saveUi() { try { localStorage.setItem(LS + "-ui", JSON.stringify(ui)); } catch (e) {} }
+
+(async () => {
+  if (!window.claude?.use) return;
+  claude.use("sample").then(s => { sampleApi = s; if (s && ui.tab === "light") render(); }, () => {});
+  claude.use("assets").then(a => { assets = a; if (a && !$("#sheet").hidden) { const p = $("#sheet [data-noteid]"); if (p) openPose(p.dataset.noteid, true); } }, () => {});
+  try {
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    dbDoc = db.doc("data/users/" + id + "/state");
+    const snap = await dbDoc.get();
+    if (snap.exists) { state = Object.assign(sample(), snap.data()); state = JSON.parse(JSON.stringify(state)); render(); syncEl.textContent = "Synced"; }
+    else { save(); }
+  } catch (e) { dbDoc = null; }
+})();
+
+/* ---------- Helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const allPoses = () => POSES.concat(state.mine);
+const poseById = id => allPoses().find(p => p.id === id);
+const foundById = id => FOUNDATIONS.find(f => f.id === id);
+const fIcon = (f, size = 56) => `<svg viewBox="0 0 56 56" width="${size}" height="${size}" fill="var(--accent)" stroke="var(--accent)" aria-hidden="true">${f.svg}</svg>`;
+
+/* ---------- Tabs ---------- */
+const TABS = [
+  ["method", "Guide", '<path d="M4 6h16M4 12h10M4 18h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>'],
+  ["cards", "Poses", '<rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 8h6M9 12h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'],
+  ["boards", "Shots", '<path d="M5 6l2 2 3-3M5 13l2 2 3-3M13 7h7M13 14h7M5 20h15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'],
+  ["camera", "Camera", '<path d="M4 8h3l2-3h6l2 3h3v11H4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2" fill="none"/>'],
+  ["light", "Light",'<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'],
+];
+function renderTabs() {
+  $("#tabs").innerHTML = TABS.map(([id, label, icon]) =>
+    `<button role="tab" id="tab-${id}" aria-selected="${ui.tab === id}" data-tab="${id}"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>${label}</button>`).join("");
+}
+$("#tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  ui.tab = b.dataset.tab; saveUi(); render(); window.scrollTo(0, 0);
+});
+
+/* ---------- Method ---------- */
+function viewMethod() {
+  return `<div class="view">
+    <section class="card"><span class="label">How it works</span>
+      <h2>Start from an anchor. Shift, don't reset.</h2>
+      <p>Skip the giant pose library. Place people in one of five anchor positions, give them a prompt that draws out real expression, then call a short shift to reach the next pose. Each shift gives you a fresh set of frames without starting over.</p></section>
+    <section class="view" style="padding:0"><span class="label">Anchor positions</span>
+      ${FOUNDATIONS.map(f => `<div class="card pose-row"><div class="thumb wide">${sceneFor(poseById(BASE[f.id]), false).svg}</div><div class="pose-text"><h3>${f.name}</h3><p>${f.line}</p><p class="muted">${f.why}</p></div></div>`).join("")}</section>
+    <section class="view" style="padding:0"><span class="label">Shifts (call them out)</span>
+      <div class="moves">${MOVES.map(m => `<div class="move"><b>${m.w}</b>${MOVE_PLANS[m.w] ? movePlan(...MOVE_PLANS[m.w], m.w + " move, seen from above") : ""}<span class="muted">${m.d}</span></div>`).join("")}</div></section>
+    <section class="card"><span class="label">On the day</span>
+      <ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li>Place the anchor and fix hands, weight and chin.</li>
+        <li>Give the prompt to draw out real expression. Shoot through it.</li>
+        <li>Call a shift. Shoot the new pose without resetting.</li>
+        <li>Check it off your shot list and keep going.</li></ol></section>
+  </div>`;
+}
+
+/* ---------- Cards ---------- */
+function viewCards() {
+  const subs = ["All", ...SUBJECTS];
+  const q = ui.q.trim().toLowerCase();
+  const list = allPoses().filter(p =>
+    (ui.subject === "All" || p.subject === ui.subject) &&
+    (ui.found === "all" || p.f === ui.found) &&
+    (!q || (p.name + " " + p.cue).toLowerCase().includes(q)));
+  return `<div class="view">
+    <input type="text" id="q" placeholder="Search poses or prompts" value="${esc(ui.q)}" aria-label="Search poses">
+    <div class="chips" role="group" aria-label="Subject">${subs.map(s => `<button class="chip" data-subject="${s}" aria-pressed="${ui.subject === s}">${s}</button>`).join("")}</div>
+    <div class="chips" role="group" aria-label="Anchor"><button class="chip" data-found="all" aria-pressed="${ui.found === "all"}">Any anchor</button>${FOUNDATIONS.map(f => `<button class="chip" data-found="${f.id}" aria-pressed="${ui.found === f.id}">${f.name}</button>`).join("")}</div>
+    <div class="list">${list.length ? list.map(p => `
+      <button class="card tap pose-row" data-pose="${p.id}">
+        <div class="thumb">${(state.photos[p.id] || [])[0] ? `<img src="/_blob/${esc(state.photos[p.id][0])}" alt="">` : sceneFor(p, false).svg}</div>
+        <div class="pose-text"><div class="meta"><span class="tag">${esc(p.subject)}</span><span class="tag f">${esc(foundById(p.f)?.name || "")}</span></div>
+        <h3>${esc(p.name)}</h3><p class="cue-line">“${esc(p.cue)}”</p></div>
+      </button>`).join("") : `<p class="empty">No poses match. Clear a filter or add your own.</p>`}</div>
+    <button class="btn" id="addPose">+ Add your own pose card</button>
+  </div>`;
+}
+
+function openPose(id) {
+  const p = poseById(id); if (!p) return;
+  const f = foundById(p.f);
+  const mine = state.mine.some(m => m.id === id);
+  const sc = sceneFor(p);
+  const sh = $("#sheet");
+  sh.innerHTML = `<div class="wrap">
+    <div class="row spread"><button class="btn small" data-close>← Back</button>
+      <div class="row">${mine ? `<button class="btn small" data-delpose="${p.id}">Delete</button>` : ""}<button class="btn small primary" data-addboard="${p.id}">Add to shot list</button></div></div>
+    <div><h2>${esc(p.name)}</h2><div class="meta" style="margin-top:6px"><span class="tag">${esc(p.subject)}</span><span class="tag f">${esc(f?.name || "")}</span></div></div>
+    <figure class="viz-card">${sc.svg}
+      ${sc.notes.length ? `<ol class="callouts">${sc.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ol>` : ""}
+      <button class="btn primary show-btn" data-show="${p.id}">Show the couple</button></figure>
+    <div class="sec"><div class="row spread"><span class="label">Your photos</span>${assets ? `<label class="btn small" for="photoIn">+ Add photo</label><input type="file" id="photoIn" accept="image/*" multiple hidden data-for="${p.id}">` : ""}</div>
+      <div class="photos" id="photos">${photoGrid(p.id)}</div></div>
+    <div class="sec"><span class="label">Positioning</span><ul>${p.setup.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
+    <div class="sec"><span class="label">Prompt</span><div class="say">“${esc(p.cue)}”</div>
+      <dl class="kv"><dt>Say it to</dt><dd>${esc(p.to)}</dd><dt>Tone</dt><dd>${esc(p.tone)}</dd></dl></div>
+    <div class="sec"><span class="label">Shooting notes</span>
+      <dl class="kv"><dt>Camera height</dt><dd>${esc(p.capture.height)}</dd><dt>Frames</dt><dd>${esc(p.capture.frames)}</dd><dt>Tight / wide</dt><dd>${esc(p.capture.frame)}</dd></dl></div>
+    <div class="sec" id="camset">${camHtml(p)}</div>
+    <div class="sec"><span class="label">Watch for</span><ul>${p.fails.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
+    <div class="sec"><span class="label">Next shift</span><p>${MOVES.slice(0, 4).map(m => `<b>${m.w}</b>`).join(" · ")} (see Guide for what each one does).</p></div>
+    <div class="sec"><label class="label" for="note">My notes</label><textarea id="note" data-noteid="${p.id}" placeholder="What worked, what to change next time">${esc(state.notes[p.id] || "")}</textarea></div>
+    <div id="boardPick"></div>
+  </div>`;
+  sh.hidden = false; sh.scrollTop = 0; document.body.style.overflow = "hidden";
+}
+function closeSheet() { $("#sheet").hidden = true; document.body.style.overflow = ""; render(); }
+
+/* ---------- Photos ---------- */
+function photoGrid(pid) {
+  const ids = state.photos[pid] || [];
+  if (!ids.length) return `<p class="muted" style="font-size:13px">${assets ? "Add your own shots of this pose to show couples a real example." : "Photo uploads work in the online version of Poise."}</p>`;
+  return ids.map((id, i) => `<div class="ph"><button class="ph-img" data-show="${pid}" data-photo="${i}" aria-label="Show photo ${i + 1}"><img src="/_blob/${esc(id)}" alt="Example of ${esc(poseById(pid)?.name)}" onerror="this.closest('.ph').classList.add('broken')"></button>
+    ${assets ? `<button class="x ph-x" data-rmphoto="${pid}" data-i="${i}" aria-label="Remove photo">×</button>` : ""}</div>`).join("");
+}
+function shrink(file, max = 1800) {
+  return new Promise(res => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      if (k === 1 && file.size < 2.5e6 && /jpeg|png|webp/.test(file.type)) { URL.revokeObjectURL(url); return res(file); }
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob(b => res(b || file), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+async function uploadPhotos(pid, files) {
+  const box = $("#photos");
+  for (const f of files) {
+    box.insertAdjacentHTML("beforeend", `<p class="muted uploading">Uploading ${esc(f.name)}…</p>`);
+    try {
+      const blob = await shrink(f);
+      const r = await assets.upload(blob, { type: blob.type || "image/jpeg" });
+      (state.photos[pid] = state.photos[pid] || []).push(r.id); save();
+    } catch (e) {
+      const why = { too_large: "is too large", unsupported_type: "isn't a supported image type", quota_or_state: "didn't fit: photo storage is full", rate_limited: "was rate-limited; try again in a minute" }[e?.code] || "failed to upload";
+      box.insertAdjacentHTML("beforeend", `<p class="err">${esc(f.name)} ${why}.</p>`);
+    }
+    box.querySelector(".uploading")?.remove();
+  }
+  const errs = [...box.querySelectorAll(".err")].map(n => n.outerHTML).join("");
+  box.innerHTML = photoGrid(pid) + errs;
+}
+
+/* ---------- Show mode: full screen, phone turned toward the couple ---------- */
+let wake = null, showState = { pid: null, view: -1, flip: false };
+function openShow(pid, view = -1) {
+  showState = { pid, view, flip: showState.flip };
+  drawShow();
+  $("#show").hidden = false;
+  navigator.wakeLock?.request("screen").then(w => { wake = w; }, () => {});
+}
+function drawShow() {
+  const p = poseById(showState.pid), ids = state.photos[p.id] || [], v = showState.view;
+  const main = v >= 0 && ids[v] ? `<img src="/_blob/${esc(ids[v])}" alt="${esc(p.name)} example">` : sceneFor(p).svg;
+  $("#show").innerHTML = `<div class="show-top"><button class="btn small" data-closeshow>Done</button>
+      <div class="row">${ids.length ? `<button class="chip" data-showview="-1" aria-pressed="${v < 0}">Diagram</button>${ids.map((_, i) => `<button class="chip" data-showview="${i}" aria-pressed="${v === i}">Photo ${i + 1}</button>`).join("")}` : ""}
+      <button class="btn small" data-flip aria-pressed="${showState.flip}">Mirror</button></div></div>
+    <div class="show-main ${showState.flip ? "flip" : ""}">${main}</div>
+    <p class="show-cue">“${esc(p.cue)}”</p>`;
+}
+function closeShow() { $("#show").hidden = true; wake?.release?.().catch(() => {}); wake = null; }
+
+function openNewPose() {
+  const sh = $("#sheet");
+  sh.innerHTML = `<form class="wrap" id="poseForm">
+    <div class="row spread"><button type="button" class="btn small" data-close>Cancel</button><button class="btn small primary" type="submit">Save card</button></div>
+    <h2>New pose card</h2>
+    <label class="label" for="np-name">Name</label><input type="text" id="np-name" required>
+    <div class="grid2"><div><label class="label" for="np-sub">Subject</label><select id="np-sub">${SUBJECTS.map(s => `<option>${s}</option>`).join("")}</select></div>
+      <div><label class="label" for="np-f">Anchor</label><select id="np-f">${FOUNDATIONS.map(f => `<option value="${f.id}">${f.name}</option>`).join("")}</select></div></div>
+    <label class="label" for="np-setup">Positioning (one step per line)</label><textarea id="np-setup"></textarea>
+    <label class="label" for="np-cue">What to say</label><textarea id="np-cue" required></textarea>
+    <div class="grid2"><div><label class="label" for="np-to">Say it to</label><input type="text" id="np-to" value="Both"></div>
+      <div><label class="label" for="np-tone">Tone</label><input type="text" id="np-tone" value="Warm"></div></div>
+    <div class="grid2"><div><label class="label" for="np-h">Camera height</label><input type="text" id="np-h" value="Chest"></div>
+      <div><label class="label" for="np-fr">Frames</label><input type="text" id="np-fr" value="6–10"></div></div>
+    <label class="label" for="np-tw">Tight / wide</label><input type="text" id="np-tw">
+    <label class="label" for="np-fail">Watch for (one per line)</label><textarea id="np-fail"></textarea>
+  </form>`;
+  sh.hidden = false; document.body.style.overflow = "hidden";
+  $("#poseForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const lines = id => $(id).value.split("\n").map(s => s.trim()).filter(Boolean);
+    const p = { id: "m" + uid(), name: $("#np-name").value.trim(), subject: $("#np-sub").value, f: $("#np-f").value,
+      setup: lines("#np-setup"), cue: $("#np-cue").value.trim(), to: $("#np-to").value, tone: $("#np-tone").value,
+      capture: { height: $("#np-h").value, frames: $("#np-fr").value, frame: $("#np-tw").value }, fails: lines("#np-fail") };
+    state.mine.push(p); save(); openPose(p.id);
+  });
+}
+
+/* ---------- Boards ---------- */
+function viewBoards() {
+  const b = state.boards.find(x => x.id === ui.board);
+  if (b) {
+    const done = b.items.filter(i => i.done).length;
+    return `<div class="view">
+      <div class="row spread"><button class="btn small" data-boards>← All shot lists</button><button class="btn small" data-delboard="${b.id}" id="delb">Delete list</button></div>
+      <div><h2>${esc(b.name)}</h2><p class="muted">${done} of ${b.items.length} done</p></div>
+      <div class="progress"><i style="width:${b.items.length ? done / b.items.length * 100 : 0}%"></i></div>
+      <div class="card" style="gap:0">${b.items.length ? b.items.map(i => `
+        <div class="check ${i.done ? "done" : ""}"><input type="checkbox" id="c-${i.id}" data-toggle="${i.id}" ${i.done ? "checked" : ""}>
+          <label for="c-${i.id}" class="t">${esc(i.text)}${i.pose ? ` <button class="btn small" data-pose="${i.pose}" style="margin-left:6px">Card</button>` : ""}</label>
+          <button class="x" data-rmitem="${i.id}" aria-label="Remove ${esc(i.text)}">×</button></div>`).join("")
+        : `<p class="empty">Nothing here yet. Add must-have family photos, special requests and shots you want to try, or add poses from the Poses tab.</p>`}</div>
+      <form class="row" id="addItem" style="flex-wrap:nowrap"><input type="text" id="itemText" placeholder="Add a shot, e.g. Bride + grandma" aria-label="New shot"><button class="btn primary" type="submit">Add</button></form>
+      ${done ? `<button class="btn" data-reset="${b.id}">Uncheck all</button>` : ""}
+    </div>`;
+  }
+  return `<div class="view">
+    <p class="muted">Build a shot list before the shoot, then check it off on the day.</p>
+    <div class="list">${state.boards.map(b => {
+      const d = b.items.filter(i => i.done).length;
+      return `<button class="card tap" data-board="${b.id}"><div class="row spread"><h3>${esc(b.name)}</h3><span class="time">${d}/${b.items.length}</span></div>
+        <div class="progress"><i style="width:${b.items.length ? d / b.items.length * 100 : 0}%"></i></div></button>`; }).join("") || `<p class="empty">No shot lists yet.</p>`}</div>
+    <form class="row" id="newBoard" style="flex-wrap:nowrap"><input type="text" id="boardName" placeholder="New list, e.g. Smith wedding 6/14" aria-label="Shot list name"><button class="btn primary" type="submit">Create</button></form>
+  </div>`;
+}
+
+/* ---------- Light (sun position, after the SunCalc formulas) ---------- */
+const PLACES = [
+  ["kc", "Kansas City, MO", 39.0997, -94.5786, "America/Chicago"],
+  ["nyc", "New York, NY", 40.7128, -74.006, "America/New_York"],
+  ["chi", "Chicago, IL", 41.8781, -87.6298, "America/Chicago"],
+  ["den", "Denver, CO", 39.7392, -104.9903, "America/Denver"],
+  ["la", "Los Angeles, CA", 34.0522, -118.2437, "America/Los_Angeles"],
+  ["mia", "Miami, FL", 25.7617, -80.1918, "America/New_York"],
+  ["dal", "Dallas, TX", 32.7767, -96.797, "America/Chicago"],
+  ["sea", "Seattle, WA", 47.6062, -122.3321, "America/Los_Angeles"],
+  ["custom", "Custom coordinates", null, null, null],
+];
+const RAD = Math.PI / 180, DAY = 864e5, J1970 = 2440588, J2000 = 2451545, OBL = RAD * 23.4397, J0 = 0.0009;
+function sunTimes(date, lat, lng) {
+  const toDays = d => d.valueOf() / DAY - 0.5 + J1970 - J2000;
+  const fromJ = j => new Date((j + 0.5 - J1970) * DAY);
+  const lw = RAD * -lng, phi = RAD * lat, d = toDays(date);
+  const n = Math.round(d - J0 - lw / (2 * Math.PI));
+  const ds = J0 + lw / (2 * Math.PI) + n;
+  const M = RAD * (357.5291 + 0.98560028 * ds);
+  const L = M + RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)) + RAD * 102.9372 + Math.PI;
+  const dec = Math.asin(Math.sin(L) * Math.sin(OBL));
+  const transit = a => J2000 + a + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  const noon = transit(ds);
+  const at = h => {
+    const w = Math.acos((Math.sin(h * RAD) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec)));
+    if (isNaN(w)) return [null, null];
+    const set = transit(J0 + (w + lw) / (2 * Math.PI) + n);
+    return [fromJ(noon - (set - noon)), fromJ(set)];
+  };
+  const r = {}; for (const [k, h] of [["six", -6], ["four", -4], ["sun", -0.833], ["gold", 6]]) { const [a, b] = at(h); r[k + "Rise"] = a; r[k + "Set"] = b; }
+  r.noon = fromJ(noon);
+  return r;
+}
+/* Place search: GeoNames US cities of 50,000+ plus the largest towns in each state */
+const STATES = { AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado", CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", PR: "Puerto Rico" };
+let placesDb = null, placesLoading = null, sampleApi = null;
+// Lowercase, strip accents, and spell out St./Ft./Mt. so "St. Augustine" finds "Saint Augustine".
+const placeKey = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, "")
+  .replace(/\bst\s/g, "saint ").replace(/\bft\s/g, "fort ").replace(/\bmt\s/g, "mount ").replace(/\s+/g, " ").trim();
+function loadPlaces() {
+  // Major US cities are embedded in the page so it works offline and as a shared file.
+  placesLoading = placesLoading || Promise.resolve().then(() => {
+    const d = JSON.parse($("#places-data").textContent);
+    placesDb = d.c.map(c => ({ n: c[0], k: placeKey(c[0]), st: c[1], lat: c[2], lng: c[3], tz: d.tz[c[4]], pop: c[5] }));
+    return placesDb;
+  }).catch(() => { placesLoading = null; return null; });
+  return placesLoading;
+}
+function placeLabel() {
+  const L = state.light;
+  return L.label || (PLACES.find(p => p[0] === L.place && p[2] !== null)?.[1]) || (L.place === "custom" ? "Custom coordinates" : "");
+}
+function findPlaces(q) {
+  if (!placesDb) return [];
+  const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const [cityRaw, stRaw = ""] = q.split(",");
+  const city = placeKey(cityRaw), st = norm(stRaw);
+  if (city.length < 2) return [];
+  const stOk = p => !st || p.st.toLowerCase().startsWith(st) || norm(STATES[p.st] || "").startsWith(st);
+  const starts = [], contains = [];
+  for (const p of placesDb) {
+    if (!stOk(p)) continue;
+    if (p.k.startsWith(city)) starts.push(p); else if (contains.length < 8 && p.k.includes(city)) contains.push(p);
+    if (starts.length >= 40) break;
+  }
+  starts.sort((a, b) => (b.k === city) - (a.k === city) || b.pop - a.pop);
+  return starts.concat(contains).slice(0, 8);
+}
+let suggList = [];
+function showSuggestions(q) {
+  const box = $("#sugg"); if (!box) return;
+  if (!placesDb) { box.hidden = false; box.innerHTML = `<p class="muted small" style="padding:8px 12px">Loading places…</p>`; loadPlaces().then(() => { if ($("#placeQ")?.value === q) showSuggestions(q); else if (!placesDb && box) box.innerHTML = `<p class="muted small" style="padding:8px 12px">Couldn't load the place list. Use coordinates below.</p>`; }); return; }
+  suggList = findPlaces(q);
+  box.hidden = !q.trim();
+  $("#placeQ").setAttribute("aria-expanded", String(!box.hidden));
+  box.innerHTML = suggList.length
+    ? suggList.map((p, i) => `<button role="option" data-placepick="${i}"><span class="pn"><b>${esc(p.n)}</b>, ${p.st}</span><span>${STATES[p.st] || ""}</span></button>`).join("")
+    : `<p class="muted small" style="padding:8px 12px">Not in the major-city list. Pick the nearest city, or use "Not on the list?" below.</p>`;
+}
+function setPlace(label, lat, lng, tz) {
+  Object.assign(state.light, { place: "named", label, lat, lng, tz });
+  save(); render();
+}
+async function askClaudePlace() {
+  const q = $("#placeQ").value.trim(), st = $("#askStatus");
+  if (!q) { st.textContent = "Type the town or venue name in the box above first."; return; }
+  st.textContent = "Looking up " + q + "…";
+  try {
+    const r = await sampleApi.json(`Give the location of this place, which may be a city, small town, or wedding venue anywhere in the world: "${q}". Reply with JSON only, no other text: {"name": "<place name, region>", "lat": <decimal latitude>, "lng": <decimal longitude>, "tz": "<IANA time zone, e.g. America/Chicago>"}. If you are not reasonably sure where it is, reply {"error": "unknown"}.`, { modelTier: "quick" });
+    const okTz = tz => { try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); return true; } catch (e) { return false; } };
+    if (!r || r.error || !isFinite(r.lat) || !isFinite(r.lng) || Math.abs(r.lat) > 90 || Math.abs(r.lng) > 180 || !okTz(r.tz)) { st.textContent = `Couldn't find "${q}". Try adding the state, or enter coordinates.`; return; }
+    setPlace(String(r.name || q).slice(0, 80), +r.lat, +r.lng, r.tz);
+  } catch (e) {
+    st.textContent = e?.code === "not_granted" ? "Lookup was not allowed. Enter coordinates instead." : e?.code === "rate_limited" ? "Too many lookups just now. Try again in a minute." : "Lookup failed. Enter coordinates instead.";
+  }
+}
+
+function viewLight() {
+  if (!placesDb) loadPlaces();
+  const L = state.light;
+  const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const dateStr = L.date || today;
+  const [y, m, dd] = dateStr.split("-").map(Number);
+  const ok = isFinite(L.lat) && isFinite(L.lng) && L.lat !== null && L.lng !== null;
+  const tz = L.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  let body = `<p class="empty">Enter a latitude and longitude to see light windows.</p>`;
+  if (ok) {
+    const t = sunTimes(new Date(Date.UTC(y, m - 1, dd, 12)), L.lat, L.lng);
+    const fmt = d => d ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: tz }) : "—";
+    const W = [
+      ["Morning blue hour", t.sixRise, t.fourRise, "var(--sky)", "Even, cool, soft. Quiet portraits, skylines, lit venues."],
+      ["Morning golden hour", t.fourRise, t.goldRise, "var(--gold)", "Warm, low and directional. Rare at weddings; great for elopements."],
+      ["Evening golden hour", t.goldSet, t.fourSet, "var(--gold)", "Warm backlight and rim light. Plan couple portraits here."],
+      ["Evening blue hour", t.fourSet, t.sixSet, "var(--sky)", "Deep blue sky. Add flash or sparklers; mood shots, exits."],
+    ];
+    const s0 = t.sixRise ? t.sixRise.valueOf() : null, s1 = t.sixSet ? t.sixSet.valueOf() : null;
+    let bar = "";
+    if (s0 && s1) {
+      const span = s1 - s0, pos = d => ((d.valueOf() - s0) / span * 100).toFixed(2);
+      bar = `<div class="timeline" aria-hidden="true">${W.map(w => w[1] && w[2] ? `<div class="seg" style="left:${pos(w[1])}%;width:${pos(w[2]) - pos(w[1])}%;background:${w[3]};opacity:.85"></div>` : "").join("")}
+</div><div class="ticks"><span>${fmt(t.sixRise)}</span><span>noon ${fmt(t.noon)}</span><span>${fmt(t.sixSet)}</span></div>`;
+    }
+    body = `${bar}
+      <div class="card"><div class="row spread"><span class="label">Sunrise</span><span class="time">${fmt(t.sunRise)}</span></div>
+        <div class="row spread"><span class="label">Sunset</span><span class="time">${fmt(t.sunSet)}</span></div></div>
+      <div class="list">${W.map(w => `<div class="card win"><span class="sw" style="background:${w[3]}"></span>
+        <div><h3>${w[0]}</h3><p class="muted">${w[4]}</p></div><span class="time">${fmt(w[1])}<br>${fmt(w[2])}</span></div>`).join("")}</div>
+      <p class="muted">Times in ${esc(tz)}. Golden hour = sun from 6° above to 4° below the horizon; blue hour = 4° to 6° below. Hills and buildings make the real light end earlier.</p>
+      <p class="muted small">Place data from <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0).</p>`;
+  }
+  return `<div class="view">
+    <div class="card">
+      <label class="label" for="placeQ">Venue city</label>
+      <div class="ac"><input type="text" id="placeQ" placeholder="City, state (e.g. Napa, CA)" autocomplete="off" value="${esc(placeLabel())}" role="combobox" aria-controls="sugg" aria-expanded="false">
+        <div class="sugg" id="sugg" role="listbox" hidden></div></div>
+      ${ok ? `<p class="muted small">${esc(placeLabel())} · ${L.lat.toFixed(3)}, ${L.lng.toFixed(3)} · ${esc(tz)}</p>` : ""}
+      <details class="more" ${L.place === "custom" ? "open" : ""}><summary>Not on the list?</summary>
+        <div class="view" style="padding-top:8px;gap:8px">
+          ${sampleApi ? `<p class="muted small">Type a small town or a venue name above, then:</p><button class="btn" data-askplace>Look it up with Claude</button><p class="muted small" id="askStatus" aria-live="polite"></p>` : ""}
+          <p class="muted small">Or enter coordinates. In Google Maps, long-press the venue to copy them.</p>
+          <div class="grid2"><div><label class="label" for="lat">Latitude</label><input type="number" step="any" id="lat" value="${L.lat ?? ""}"></div>
+          <div><label class="label" for="lng">Longitude</label><input type="number" step="any" id="lng" value="${L.lng ?? ""}"></div></div>
+        </div></details>
+      <label class="label" for="date">Date</label><input type="date" id="date" value="${dateStr}">
+    </div>
+    ${body}
+  </div>`;
+}
+
+/* ---------- Render + events ---------- */
+function render() {
+  renderTabs();
+  const v = { method: viewMethod, cards: viewCards, boards: viewBoards, camera: viewCamera, light: viewLight }[ui.tab] || viewCards;
+  $("#app").innerHTML = v();
+}
+let pendingDel = null;
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  const d = t.dataset;
+  if (d.subject) { ui.subject = d.subject; saveUi(); render(); }
+  else if (d.found) { ui.found = d.found; saveUi(); render(); }
+  else if (d.placepick) { const p = suggList[+d.placepick]; if (p) setPlace(`${p.n}, ${p.st}`, p.lat, p.lng, p.tz); }
+  else if ("askplace" in d) askClaudePlace();
+  else if (d.lenspick || d.lightpick) {
+    if (d.lenspick) ui.lens = d.lenspick; else ui.light = d.lightpick;
+    saveUi(); $("#camset").innerHTML = camHtml(poseById(d.pid));
+  }
+  else if (d.camsec) { ui.camSec = d.camsec; saveUi(); render(); }
+  else if (d.lenstoggle) {
+    const ls = state.gear.lenses, i = ls.indexOf(d.lenstoggle);
+    if (i >= 0) ls.splice(i, 1); else ls.push(d.lenstoggle);
+    save(); render();
+  }
+  else if (d.tab && t.closest("#sheet")) { ui.tab = d.tab; saveUi(); closeSheet(); window.scrollTo(0, 0); }
+  else if (d.show) openShow(d.show, d.photo !== undefined ? +d.photo : -1);
+  else if (d.showview) { showState.view = +d.showview; drawShow(); }
+  else if ("flip" in d) { showState.flip = !showState.flip; drawShow(); }
+  else if ("closeshow" in d) closeShow();
+  else if (d.rmphoto) {
+    if (t.textContent !== "Remove?") { t.textContent = "Remove?"; t.classList.add("confirm"); return; }
+    const id = state.photos[d.rmphoto].splice(+d.i, 1)[0]; save();
+    assets?.delete(id).catch(() => {});
+    $("#photos").innerHTML = photoGrid(d.rmphoto);
+  }
+  else if (d.pose) { e.preventDefault(); openPose(d.pose); }
+  else if (t.id === "addPose") openNewPose();
+  else if ("close" in d) closeSheet();
+  else if (d.delpose) {
+    if (t.textContent !== "Tap again to delete") { t.textContent = "Tap again to delete"; return; }
+    state.mine = state.mine.filter(p => p.id !== d.delpose); delete state.notes[d.delpose]; save(); closeSheet();
+  }
+  else if (d.addboard) {
+    const pick = $("#boardPick");
+    pick.innerHTML = `<div class="sec"><span class="label">Add to which shot list?</span><div class="row">${state.boards.map(b => `<button class="btn small" data-addto="${b.id}" data-p="${d.addboard}">${esc(b.name)}</button>`).join("") || `<span class="muted">Create a shot list first in the Shots tab.</span>`}</div></div>`;
+    pick.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  else if (d.addto) {
+    const b = state.boards.find(x => x.id === d.addto), p = poseById(d.p);
+    b.items.push({ id: uid(), text: p.name, pose: p.id, done: false }); save();
+    t.textContent = "Added ✓"; t.disabled = true;
+  }
+  else if (d.board) { ui.board = d.board; saveUi(); render(); window.scrollTo(0, 0); }
+  else if ("boards" in d) { ui.board = null; saveUi(); render(); }
+  else if (d.rmitem) { const b = state.boards.find(x => x.id === ui.board); b.items = b.items.filter(i => i.id !== d.rmitem); save(); render(); }
+  else if (d.reset) { state.boards.find(x => x.id === d.reset).items.forEach(i => i.done = false); save(); render(); }
+  else if (d.delboard) {
+    if (t.textContent !== "Tap again to delete") { t.textContent = "Tap again to delete"; return; }
+    state.boards = state.boards.filter(b => b.id !== d.delboard); ui.board = null; save(); saveUi(); render();
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "sensor") { state.gear.sensor = t.value; save(); render(); return; }
+  if (t.id === "photoIn") { if (t.files.length && assets) uploadPhotos(t.dataset.for, [...t.files]); t.value = ""; return; }
+  if (t.dataset.toggle) { const b = state.boards.find(x => x.id === ui.board); b.items.find(i => i.id === t.dataset.toggle).done = t.checked; save(); render(); }
+  else if (t.id === "place") {
+    const p = PLACES.find(x => x[0] === t.value);
+    state.light.place = p[0];
+    if (p[2] !== null) Object.assign(state.light, { lat: p[2], lng: p[3], tz: p[4] });
+    else state.light.tz = null;
+    save(); render();
+  }
+  else if (t.id === "lat" || t.id === "lng") {
+    const v = parseFloat(t.value);
+    Object.assign(state.light, { [t.id]: isFinite(v) ? v : null, place: "custom", label: "Custom coordinates", tz: null });
+    save(); render();
+  }
+  else if (t.id === "date") { state.light.date = t.value; save(); render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#show").hidden) closeShow();
+  if (e.target.id === "placeQ") {
+    if (e.key === "Enter" && suggList[0] && !$("#sugg").hidden) { e.preventDefault(); const p = suggList[0]; setPlace(`${p.n}, ${p.st}`, p.lat, p.lng, p.tz); }
+    if (e.key === "Escape") $("#sugg").hidden = true;
+  }
+});
+document.addEventListener("focusin", e => { if (e.target.id === "placeQ") e.target.select(); });
+document.addEventListener("pointerdown", e => { const s = $("#sugg"); if (s && !s.hidden && !e.target.closest(".ac")) s.hidden = true; });
+let noteTimer;
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "placeQ") { showSuggestions(t.value); return; }
+  if (t.id === "q") { ui.q = t.value; saveUi(); const pos = t.selectionStart; render(); const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos); }
+  else if (t.dataset.noteid) { state.notes[t.dataset.noteid] = t.value; clearTimeout(noteTimer); noteTimer = setTimeout(save, 600); }
+});
+document.addEventListener("submit", e => {
+  if (e.target.id === "newBoard") {
+    e.preventDefault(); const n = $("#boardName").value.trim(); if (!n) return;
+    const b = { id: uid(), name: n, items: [] }; state.boards.unshift(b); ui.board = b.id; save(); saveUi(); render();
+  } else if (e.target.id === "addItem") {
+    e.preventDefault(); const v = $("#itemText").value.trim(); if (!v) return;
+    state.boards.find(x => x.id === ui.board).items.push({ id: uid(), text: v, done: false }); save(); render(); $("#itemText").focus();
+  }
+});
+if (ui.board && !state.boards.some(b => b.id === ui.board)) ui.board = null;
+render();
+</script>
+</body>
+</html>
